@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Education Form Builder</title>
+    
+    <!-- Tailwind & Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // KONFIGURASI APLIKASI
+        const IS_PREVIEW = false; // Ubah ke false jika di-deploy ke Blogger
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbwzqnF-ju3nMajxcZ1CAfFdK008GpiVtjsxxK1XMsc7vnECf359Swa5Smj98BDAfjJ8kA/exec"; 
+        
+        // 👇👇 [GANTI LINK LOGO MANUAL DI SINI] 👇👇
+        // Masukkan link logo Anda di dalam tanda kutip di bawah ini.
+        // Logo ini akan otomatis tampil secepat kilat saat aplikasi pertama kali dibuka!
+        let APP_LOGO_URL = "https://iili.io/CMttawP.md.png";
+        let APP_FAVICON_URL = "https://iili.io/CMttawP.md.png";
+        // 👆👆 ==================================== 👆👆
+
+        function setFavicon(url) {
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link); }
+            link.href = url + "?v=" + new Date().getTime(); 
+        }
+
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'edu-dark': '#0B192C', 'edu-blue': '#0044CC', 'edu-gold': '#FACC15', 'edu-bg': '#F8FAFC' },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1f2937; margin: 0; padding: 0; }
+        
+        .view-section { display: none; width: 100%; min-height: 100vh; }
+        #view-public-form { overflow-y: auto; overflow-x: hidden; }
+        
+        .view-section.active { display: block; }
+        .view-section.active#view-admin { display: flex !important; }
+        .view-section:not(.active) { display: none !important; }
+        #view-login.active { display: flex !important; align-items: center; justify-content: center; }
+        #view-public-responses.active { display: flex !important; flex-direction: column; }
+
+        .fade-in { animation: fadeIn 0.1s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+
+        .sidebar-link { transition: all 0.1s ease; }
+        .sidebar-link:hover, .sidebar-link.active { background-color: #F1F5F9; color: #0044CC; font-weight: 700; }
+        .sidebar-link.active { border-left: 4px solid #FACC15; }
+        
+        .field-card { border-left: 4px solid transparent; transition: all 0.15s; }
+        .field-card:focus-within, .field-card:hover { border-left-color: #0044CC; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .field-card.dragging { opacity: 0.4; border: 2px dashed #0044CC; }
+        .field-card.drag-over { border-top: 4px solid #FACC15; }
+        
+        .section-break { border-top: 2px dashed #cbd5e1; position: relative; margin-top: 3rem; margin-bottom: 2rem; }
+        .section-break::after { content: 'BATAS HALAMAN / SECTION'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #F8FAFC; padding: 0 15px; color: #64748b; font-size: 11px; font-weight: 800; letter-spacing: 1px; border-radius: 10px; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.2s infinite linear; border-radius: 12px; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+        .kop-surat-motto { font-style: italic; color: #f97316; font-weight: 600; font-size: 12px; }
+        
+        /* BANNER FULL - TANPA POTONGAN */
+        .banner-img-container { width: 100%; height: auto; border-radius: 16px 16px 0 0; overflow: hidden; background: #e2e8f0; }
+        .banner-img-container img { width: 100%; height: auto; display: block; }
+    </style>
+</head>
+<body class="bg-edu-bg">
+
+    <!-- VIEW 1: PUBLIC FORM -->
+    <section id="view-public-form" class="view-section relative">
+        <div id="public-form-container" class="max-w-3xl mx-auto py-8 md:py-12 px-4 pb-32 fade-in min-h-screen">
+            <div class="bg-white rounded-2xl p-8 shadow-sm skeleton h-48 mb-6 border border-gray-100"></div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm skeleton h-24 mb-4"></div>
+            <div class="bg-white rounded-2xl p-6 shadow-sm skeleton h-24 mb-4"></div>
+        </div>
+    </section>
+
+    <!-- VIEW 2: LOGIN ADMIN -->
+    <section id="view-login" class="view-section bg-edu-dark relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-edu-blue via-edu-dark to-black"></div>
+        <div class="bg-white p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md mx-4 relative z-10 fade-in border-t-8 border-t-edu-gold">
+            
+            <div class="flex flex-col items-center mb-8">
+                <img src="" id="login-logo" alt="Logo" class="w-20 h-20 mb-4 shadow-md rounded-2xl border border-gray-100 object-contain p-1 bg-white">
+                <h1 class="text-2xl font-extrabold text-gray-900">All Education</h1>
+                <p class="text-xs text-gray-400 uppercase tracking-widest mt-1 text-center font-bold">Internal Form System</p>
+            </div>
+            
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="mb-5">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Email / Username</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-envelope absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="email" id="login-email" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-edu-blue focus:border-edu-blue transition outline-none font-medium text-gray-800 text-sm" placeholder="Email Anda..." required>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-3.5 text-gray-400"></i>
+                        <input type="password" id="login-password" class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-edu-blue focus:border-edu-blue transition outline-none font-medium text-gray-800 text-sm" placeholder="••••••••" required>
+                    </div>
+                </div>
+                
+                <button type="submit" id="btn-login" class="w-full bg-edu-blue hover:bg-edu-dark text-white font-bold py-3.5 rounded-xl transition duration-300 shadow-lg flex justify-center items-center gap-2">
+                    <span>Masuk Dashboard <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- VIEW 3: ADMIN DASHBOARD -->
+    <section id="view-admin" class="view-section h-screen w-full flex-col md:flex-row overflow-hidden bg-edu-bg">
+        <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col h-auto md:h-full z-20 md:flex flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between md:justify-start gap-3">
+                <div class="flex items-center gap-3">
+                    <img src="" id="sidebar-logo" alt="Logo" class="w-10 h-10 object-contain rounded-lg shadow-sm bg-white p-0.5">
+                    <span class="font-bold text-base text-edu-dark tracking-tight leading-tight">All Edu<br><span class="text-[11px] text-gray-400 font-medium tracking-normal">Form System</span></span>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto py-6">
+                <div class="px-6 mb-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Workspace</div>
+                <nav class="flex flex-col gap-1 px-3 mb-8">
+                    <a href="#" onclick="navigateAdmin('dashboard')" id="nav-dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+                    </a>
+                    <a href="#" onclick="navigateAdmin('forms')" id="nav-forms" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <i class="fa-solid fa-file-lines w-5 text-center"></i> Manajemen Form
+                    </a>
+                    <a href="#" onclick="navigateAdmin('responses')" id="nav-responses" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <i class="fa-solid fa-inbox w-5 text-center"></i> Semua Respons
+                    </a>
+                </nav>
+
+                <div id="menu-admin-only" class="hidden">
+                    <div class="px-6 mb-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Administrator</div>
+                    <nav class="flex flex-col gap-1 px-3">
+                        <a href="#" onclick="navigateAdmin('users')" id="nav-users" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                            <i class="fa-solid fa-users-gear w-5 text-center"></i> Manajemen Pengguna
+                        </a>
+                        <a href="#" onclick="navigateAdmin('settings')" id="nav-settings" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                            <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan Global
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-100 bg-gray-50 hidden md:block mt-auto">
+                <div class="flex items-center gap-3 p-2 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-edu-blue text-white flex items-center justify-center font-bold shadow-sm text-sm" id="user-avatar">A</div>
+                    <div class="flex-1 overflow-hidden">
+                        <div class="text-sm font-bold text-gray-800 truncate" id="user-role-label">Admin</div>
+                        <div class="text-xs text-gray-500 font-medium truncate" id="user-email-label">admin@...</div>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center justify-center gap-2 font-bold border border-transparent">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar
+                </button>
+            </div>
+        </aside>
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full" id="admin-content-area"></div>
+        </main>
+    </section>
+
+    <!-- VIEW 4: PUBLIC RESPONSES (SHARE LINK) -->
+    <section id="view-public-responses" class="view-section bg-edu-bg relative min-h-screen">
+        <div id="public-responses-content" class="max-w-6xl mx-auto py-8 md:py-12 px-4 flex flex-col h-screen fade-in">
+        </div>
+    </section>
+
+    <script>
+        const state = {
+            isLoggedIn: false, token: '', userRole: '', userEmail: '',
+            currentView: 'dashboard', forms: [], users: [],
+            currentBuilderForm: null, publicFormSchema: null,
+            publicPages: [], publicCurrentPage: 0, publicPageHistory: [],
+            settings: {}
+        };
+        
+        let globalPublicResponses = [];
+        let globalPublicHeaders = [];
+        let globalPublicFormTitle = '';
+
+        const PRELOADER_HTML = `
+            <div class="max-w-6xl mx-auto space-y-6">
+                <div class="skeleton h-10 w-64"></div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6"><div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div><div class="skeleton h-32"></div></div>
+                <div class="skeleton h-64 w-full"></div>
+            </div>`;
+
+        async function api(action, payload = {}) {
+            if (IS_PREVIEW && (action === 'getDashboard' || action === 'getForms')) {
+                return new Promise(resolve => setTimeout(() => resolve({ success: true, forms: [] }), 100)); 
+            } else if (IS_PREVIEW) {
+                return new Promise(resolve => setTimeout(() => resolve({ success: false, message: "Mode Preview Aktif. Fitur ini membutuhkan database nyata." }), 100)); 
+            } else {
+                try {
+                    const response = await fetch(GAS_URL, {
+                        method: 'POST', body: JSON.stringify({ action, ...payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                    });
+                    return await response.json();
+                } catch (err) {
+                    return { success: false, message: "Gagal terhubung ke Database: " + err.message };
+                }
+            }
+        }
+
+        window.onload = async () => {
+            setFavicon(APP_FAVICON_URL);
+            if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
+            if(document.getElementById('sidebar-logo')) document.getElementById('sidebar-logo').src = APP_LOGO_URL;
+
+            api('getSettings').then(res => {
+                if(res.success && res.settings) {
+                    state.settings = res.settings;
+                    if(state.settings.logoUrl) {
+                        APP_LOGO_URL = state.settings.logoUrl;
+                        if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
+                        if(document.getElementById('sidebar-logo')) document.getElementById('sidebar-logo').src = APP_LOGO_URL;
+                    }
+                    if(state.settings.faviconUrl) {
+                        APP_FAVICON_URL = state.settings.faviconUrl;
+                        setFavicon(APP_FAVICON_URL);
+                    }
+                }
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const formSlug = urlParams.get('f');
+            const responseSlug = urlParams.get('r');
+
+            if (formSlug) {
+                switchMainView('public-form');
+                loadPublicForm(formSlug);
+            } else if (responseSlug) {
+                switchMainView('public-responses');
+                loadPublicResponses(responseSlug);
+            } else {
+                checkSession();
+            }
+        };
+
+        function switchMainView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+        }
+
+        function checkSession() {
+            const token = localStorage.getItem('edu_session_token');
+            const role = localStorage.getItem('edu_session_role');
+            const email = localStorage.getItem('edu_session_email');
+            
+            if (token && role && email) {
+                state.isLoggedIn = true; state.token = token; state.userRole = role; state.userEmail = email;
+                
+                document.getElementById('user-role-label').innerText = role === 'admin' ? 'Administrator' : 'Divisi';
+                document.getElementById('user-email-label').innerText = email;
+                document.getElementById('user-avatar').innerText = email.charAt(0).toUpperCase();
+                
+                if(role === 'admin') document.getElementById('menu-admin-only').classList.remove('hidden');
+                
+                switchMainView('admin');
+                navigateAdmin('dashboard');
+            } else {
+                switchMainView('login');
+            }
+        }
+
+        function loginSuccess(email, role) {
+            localStorage.setItem('edu_session_token', 'token_' + Date.now()); 
+            localStorage.setItem('edu_session_role', role || 'admin'); 
+            localStorage.setItem('edu_session_email', email || 'admin@alleducenter.com');
+            checkSession();
+        }
+
+        function loginFail(btn) {
+            Swal.fire({ icon: 'error', title: 'Login Gagal', text: 'Kredensial salah atau tidak terdaftar.', confirmButtonColor: '#0044CC' });
+            btn.innerHTML = 'Masuk Dashboard <i class="fa-solid fa-arrow-right ml-1"></i>';
+            btn.disabled = false;
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login');
+
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Proses...';
+            btn.disabled = true;
+
+            if (typeof google === 'undefined' && !IS_PREVIEW) {
+                // REST API MODE (Blogger)
+                try {
+                    const res = await api('login', { email, password: pass });
+                    if(res.success) {
+                        loginSuccess(res.email, res.role);
+                        btn.innerHTML = 'Masuk Dashboard <i class="fa-solid fa-arrow-right ml-1"></i>';
+                        btn.disabled = false;
+                    } else { loginFail(btn); }
+                } catch(err) {
+                    Swal.fire({ icon: 'warning', title: 'Koneksi Error', text: 'Tidak dapat menghubungi server. Pastikan GAS URL valid.', confirmButtonColor: '#0044CC' });
+                    btn.innerHTML = 'Masuk Dashboard <i class="fa-solid fa-arrow-right ml-1"></i>';
+                    btn.disabled = false;
+                }
+            } else if (IS_PREVIEW) {
+                setTimeout(() => { loginSuccess(email, 'admin'); }, 800);
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('edu_session_token');
+            localStorage.removeItem('edu_session_role');
+            localStorage.removeItem('edu_session_email');
+            location.href = window.location.pathname; 
+        }
+
+        async function navigateAdmin(page, additionalData = null) {
+            state.currentView = page;
+            document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
+            if(document.getElementById(`nav-${page}`)) document.getElementById(`nav-${page}`).classList.add('active');
+
+            const contentArea = document.getElementById('admin-content-area');
+            
+            if(page === 'builder') { renderFormBuilder(contentArea, additionalData); return; }
+            if(page === 'view-responses') { renderResponseTable(contentArea, additionalData); return; }
+            if(page === 'settings') { renderSettings(contentArea); return; }
+            if(page === 'users') { renderUserManagement(contentArea); return; }
+
+            let contentPreloaded = false;
+            if (state.forms && state.forms.length > 0 && (page === 'dashboard' || page === 'forms' || page === 'responses')) {
+                void contentArea.offsetWidth;
+                if(page === 'dashboard') renderDashboard(contentArea);
+                if(page === 'forms') renderFormsManagement(contentArea);
+                if(page === 'responses') renderResponsesIndex(contentArea);
+                contentPreloaded = true;
+            } else {
+                contentArea.innerHTML = PRELOADER_HTML;
+            }
+
+            api('getDashboard', { userEmail: state.userEmail, userRole: state.userRole }).then(res => {
+                if(res.success) {
+                    const isUpdated = JSON.stringify(state.forms) !== JSON.stringify(res.forms);
+                    state.forms = res.forms; 
+                    if(state.currentView === page && (!contentPreloaded || isUpdated)) {
+                        void contentArea.offsetWidth;
+                        if(page === 'dashboard') renderDashboard(contentArea);
+                        if(page === 'forms') renderFormsManagement(contentArea);
+                        if(page === 'responses') renderResponsesIndex(contentArea);
+                    }
+                }
+            });
+        }
+
+        function renderDashboard(container) {
+            const totalForms = state.forms.length;
+            const activeForms = state.forms.filter(f => f.status === 'Aktif').length;
+            const totalResponses = state.forms.reduce((sum, f) => sum + (f.responsesCount || 0), 0);
+
+            container.innerHTML = `
+                <div class="fade-in max-w-6xl mx-auto pb-10">
+                    <h1 class="text-2xl font-extrabold text-gray-900 mb-1">Dashboard</h1>
+                    <p class="text-gray-500 text-sm mb-8 font-medium">Selamat datang, ${state.userEmail}</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-1">
+                            <div class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total Form</div>
+                            <div class="text-3xl font-extrabold text-edu-blue">${totalForms}</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-1">
+                            <div class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total Respons</div>
+                            <div class="text-3xl font-extrabold text-green-600">${totalResponses}</div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-1">
+                            <div class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Form Aktif</div>
+                            <div class="text-3xl font-extrabold text-yellow-500">${activeForms}</div>
+                        </div>
+                        <button onclick="navigateAdmin('builder')" class="bg-edu-blue text-white rounded-2xl font-bold hover:bg-blue-800 transition shadow-md flex flex-col justify-center items-center gap-2 p-5">
+                            <i class="fa-solid fa-plus text-xl mb-1"></i> <span class="text-sm">Buat Form Baru</span>
+                        </button>
+                    </div>
+
+                    <h2 class="text-sm font-bold text-gray-800 mb-4 uppercase tracking-widest">Aktivitas Terbaru</h2>
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <table class="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-bold">Nama Form</th>
+                                    <th class="p-4 font-bold">Status</th>
+                                    <th class="p-4 font-bold text-center">Respons</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm divide-y divide-gray-100">
+                                ${state.forms.length > 0 ? state.forms.slice(0,5).map(f => `
+                                    <tr class="hover:bg-gray-50 transition-colors">
+                                        <td class="p-4 font-bold text-gray-800">${f.title}</td>
+                                        <td class="p-4"><span class="px-2 py-1 rounded-md text-[10px] font-bold ${f.status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">${f.status}</span></td>
+                                        <td class="p-4 text-gray-600 text-center font-bold">${f.responsesCount || 0}</td>
+                                    </tr>
+                                `).join('') : `<tr><td colspan="3" class="p-10 text-center text-gray-400 font-medium text-sm">Belum ada form yang dibuat.</td></tr>`}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFormsManagement(container) {
+            container.innerHTML = `
+                <div class="fade-in max-w-6xl mx-auto pb-10">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                        <h1 class="text-2xl font-extrabold text-gray-900 mb-1">Manajemen Form</h1>
+                        <button onclick="navigateAdmin('builder')" class="bg-edu-blue hover:bg-blue-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-sm transition flex items-center gap-2"><i class="fa-solid fa-plus"></i> Form Baru</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        ${state.forms.map(f => `
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative transition hover:-translate-y-1 hover:shadow-md">
+                                <div class="absolute top-4 right-4 flex gap-1">
+                                    <button onclick="showQRCode('${f.slug}')" class="text-gray-400 hover:text-edu-blue bg-gray-50 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center transition" title="QR Code"><i class="fa-solid fa-qrcode text-xs"></i></button>
+                                    <button onclick="copyFormLink('${f.slug}')" class="text-gray-400 hover:text-edu-blue bg-gray-50 hover:bg-blue-50 w-8 h-8 rounded-lg flex items-center justify-center transition" title="Copy Link"><i class="fa-solid fa-link text-xs"></i></button>
+                                    <button onclick="duplicateForm('${f.id}')" class="text-gray-400 hover:text-green-600 bg-gray-50 hover:bg-green-50 w-8 h-8 rounded-lg flex items-center justify-center transition" title="Duplikat"><i class="fa-solid fa-copy text-xs"></i></button>
+                                    <button onclick="editForm('${f.id}')" class="text-gray-400 hover:text-edu-gold bg-gray-50 hover:bg-yellow-50 w-8 h-8 rounded-lg flex items-center justify-center transition" title="Edit"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    <button onclick="deleteForm('${f.id}')" class="text-gray-400 hover:text-red-500 bg-gray-50 hover:bg-red-50 w-8 h-8 rounded-lg flex items-center justify-center transition" title="Hapus"><i class="fa-solid fa-trash text-xs"></i></button>
+                                </div>
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 text-edu-blue flex items-center justify-center text-lg mb-3">
+                                    ${f.bannerUrl === 'isQuiz_true' || (f.bannerUrl && f.bannerUrl.startsWith('isQuiz_true|')) ? '<i class="fa-solid fa-graduation-cap"></i>' : '<i class="fa-regular fa-file-alt"></i>'}
+                                </div>
+                                <h3 class="font-bold text-gray-900 text-base mb-1 line-clamp-1 pr-32">${f.title}</h3>
+                                <p class="text-[11px] text-blue-500 mb-4 font-mono truncate cursor-pointer hover:underline" onclick="copyFormLink('${f.slug}')">/${f.slug}</p>
+                                
+                                <div class="flex items-center justify-between border-t border-gray-100 pt-3 mt-auto">
+                                    <span class="text-[11px] font-bold bg-gray-50 text-gray-600 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 cursor-pointer hover:bg-blue-50 hover:text-edu-blue transition" onclick="navigateAdmin('view-responses', '${f.id}')">
+                                        <i class="fa-solid fa-users"></i> ${f.responsesCount || 0} Respons
+                                    </span>
+                                    <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md ${f.status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">${f.status}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                        ${state.forms.length === 0 ? `<div class="col-span-full text-center py-16 text-gray-400 border-2 border-dashed rounded-3xl font-medium text-sm">Belum ada form. Klik "Form Baru" untuk memulai.</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResponsesIndex(container) { navigateAdmin('forms'); }
+
+        function copyFormLink(slug) {
+            const url = window.location.origin + window.location.pathname + '?f=' + slug;
+            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Tersalin', showConfirmButton: false, timer: 1500 }));
+        }
+
+        function showQRCode(slug) {
+            const url = window.location.origin + window.location.pathname + '?f=' + slug;
+            const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&margin=10`;
+            
+            Swal.fire({
+                title: 'QR Code Form',
+                html: `<p class="text-sm text-gray-500 mb-4">/${slug}</p>`,
+                imageUrl: qrApiUrl,
+                imageWidth: 200,
+                imageHeight: 200,
+                imageAlt: 'QR Code',
+                showCancelButton: true,
+                confirmButtonColor: '#0044CC',
+                cancelButtonColor: '#e2e8f0',
+                cancelButtonText: '<span style="color:#475569">Tutup</span>',
+                confirmButtonText: '<i class="fa-solid fa-download"></i> Download'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const a = document.createElement('a');
+                    a.href = qrApiUrl; a.download = `QR_${slug}.png`;
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                }
+            });
+        }
+
+        function copyPublicResponseLink(slug) {
+            const url = window.location.origin + window.location.pathname + '?r=' + slug;
+            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Link Dashboard Publik Tersalin', showConfirmButton: false, timer: 1500 }));
+        }
+
+        function editForm(id) { const form = state.forms.find(f => f.id === id); if(form) navigateAdmin('builder', form); }
+
+        async function duplicateForm(id) {
+            const formToCopy = state.forms.find(f => f.id === id);
+            if(!formToCopy) return;
+            
+            const newForm = JSON.parse(JSON.stringify(formToCopy));
+            newForm.id = 'f_' + Date.now();
+            newForm.title = newForm.title + ' (Copy)';
+            newForm.slug = newForm.slug + '-copy-' + Math.floor(Math.random()*1000);
+            newForm.responsesCount = 0;
+            newForm.status = 'Draft';
+            
+            Swal.fire({title: 'Menduplikasi...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            const res = await api('saveForm', { form: newForm, userEmail: state.userEmail });
+            
+            if(res.success) { Swal.fire({ icon: 'success', title: 'Terduplikasi!', timer: 1500, showConfirmButton: false }); navigateAdmin('forms'); } 
+            else { Swal.fire('Gagal', res.message, 'error'); }
+        }
+
+        async function deleteForm(id) {
+            const res = await Swal.fire({ title: 'Hapus Form?', text: "Data tidak bisa dikembalikan.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Hapus' });
+            if (res.isConfirmed) {
+                Swal.fire({title: 'Proses...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                const result = await api('deleteForm', { id: id, userEmail: state.userEmail, userRole: state.userRole });
+                if(result.success) { Swal.fire('Terhapus!', '', 'success'); navigateAdmin('forms'); } 
+                else { Swal.fire('Gagal', result.message, 'error'); }
+            }
+        }
+
+        let dragSrcElIndex = null;
+        function dragStart(e, index) { dragSrcElIndex = index; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', index); setTimeout(() => e.target.closest('.field-card').classList.add('dragging'), 0); }
+        function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
+        function dragEnter(e) { e.preventDefault(); e.target.closest('.field-card')?.classList.add('drag-over'); }
+        function dragLeave(e) { e.target.closest('.field-card')?.classList.remove('drag-over'); }
+        function drop(e, targetIndex) {
+            e.stopPropagation(); e.target.closest('.field-card')?.classList.remove('drag-over');
+            const srcIndex = dragSrcElIndex;
+            if (srcIndex !== targetIndex && srcIndex !== null) {
+                const fields = state.currentBuilderForm.fields;
+                const draggedItem = fields.splice(srcIndex, 1)[0];
+                fields.splice(targetIndex, 0, draggedItem);
+                refreshBuilderView();
+            }
+            return false;
+        }
+        function dragEnd(e) { document.querySelectorAll('.field-card').forEach(el => { el.classList.remove('dragging'); el.classList.remove('drag-over'); }); dragSrcElIndex = null; }
+
+        function renderFormBuilder(container, existingData = null) {
+            if (existingData) {
+                state.currentBuilderForm = JSON.parse(JSON.stringify(existingData));
+                if(typeof state.currentBuilderForm.fields === 'string') state.currentBuilderForm.fields = JSON.parse(state.currentBuilderForm.fields || '[]');
+            } else {
+                state.currentBuilderForm = { id: '', title: 'Formulir Baru', slug: 'form-' + Math.floor(Math.random()*10000), description: 'Deskripsi formulir...', bannerUrl: '', status: 'Draft', fields: [] };
+            }
+
+            const isQuiz = state.currentBuilderForm.bannerUrl === 'isQuiz_true' || state.currentBuilderForm.bannerUrl?.startsWith('isQuiz_true|');
+            let bannerLink = '';
+            if (state.currentBuilderForm.bannerUrl && state.currentBuilderForm.bannerUrl.includes('|')) { bannerLink = state.currentBuilderForm.bannerUrl.split('|')[1]; }
+            else if (state.currentBuilderForm.bannerUrl && state.currentBuilderForm.bannerUrl !== 'isQuiz_true' && state.currentBuilderForm.bannerUrl !== 'isQuiz_false') { bannerLink = state.currentBuilderForm.bannerUrl; }
+
+            container.innerHTML = `
+                <div class="fade-in max-w-4xl mx-auto pb-32">
+                    <div class="flex justify-between items-center mb-6 bg-white p-3 md:p-4 rounded-2xl shadow-sm border border-gray-100 sticky top-0 z-40">
+                        <button onclick="navigateAdmin('forms')" class="text-gray-500 hover:text-edu-blue font-bold text-sm flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-50 transition"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                        <button onclick="saveForm()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm transition flex items-center gap-2"><i class="fa-solid fa-save"></i> Simpan</button>
+                    </div>
+
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 mb-6">
+                        <input type="text" id="b-title" class="w-full text-2xl md:text-3xl font-extrabold text-gray-900 border-b-2 border-transparent hover:border-gray-200 focus:border-edu-blue pb-2 mb-3 focus:outline-none transition" value="${state.currentBuilderForm.title}" placeholder="Judul Formulir" onchange="updateFormHeader()">
+                        <textarea id="b-desc" class="w-full text-gray-600 font-medium focus:outline-none border-b-2 border-transparent hover:border-gray-200 focus:border-edu-blue resize-none pb-2 transition text-sm" rows="2" placeholder="Deskripsi formulir..." onchange="updateFormHeader()">${state.currentBuilderForm.description}</textarea>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-6 pt-6 border-t border-gray-100">
+                            <div class="col-span-1 lg:col-span-2">
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Slug URL</label>
+                                <input type="text" id="b-slug" class="w-full text-sm bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-edu-blue font-mono" value="${state.currentBuilderForm.slug}" onchange="updateFormHeader()">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Mode Kuis / Post-Test</label>
+                                <label class="flex items-center gap-2 text-sm font-bold text-gray-700 cursor-pointer bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 hover:border-edu-blue transition h-full">
+                                    <input type="checkbox" id="b-isQuiz" class="w-4 h-4 text-edu-blue rounded focus:ring-edu-blue" ${isQuiz ? 'checked' : ''} onchange="updateFormHeader(); refreshBuilderView();"> 
+                                    Aktifkan Kuis
+                                </label>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Status Form</label>
+                                <select id="b-status" class="w-full text-sm bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-edu-blue font-bold text-gray-700 h-full" onchange="updateFormHeader()">
+                                    <option value="Aktif" ${state.currentBuilderForm.status==='Aktif'?'selected':''}>🚀 Aktif</option>
+                                    <option value="Draft" ${state.currentBuilderForm.status==='Draft'?'selected':''}>📝 Draft</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-gray-100">
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Link Custom Banner (Kosongkan jika ingin auto Kop Surat)</label>
+                            <input type="text" id="b-banner" class="w-full text-sm bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-edu-blue transition" value="${bannerLink}" placeholder="https://link-gambar.com/banner.jpg" onchange="updateFormHeader()">
+                            <p class="text-[10px] text-gray-500 mt-1 font-medium">*Rekomendasi: Lebar penuh, bentuk persegi panjang (Rasio 4:1 atau 1600x400 px).</p>
+                            
+                            ${bannerLink ? `
+                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview Banner</div>
+                                <div class="banner-img-container" style="aspect-ratio: 4/1; overflow:hidden;"><img src="${bannerLink}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/1600x400/1E3E62/FFFFFF?text=Banner+Error'"></div>
+                            </div>
+                            ` : `
+                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm opacity-80">
+                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview (Auto Kop Surat)</div>
+                                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b-[4px] border-edu-blue rounded-t-2xl">
+                                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
+                                    <div class="flex-1">
+                                        <h1 class="text-edu-blue font-black text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
+                                        <p class="text-gray-700 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
+                                        <p class="text-gray-800 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
+                                        <p class="kop-surat-motto text-[10px] md:text-[11px]">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
+                                    </div>
+                                </div>
+                            </div>`}
+                        </div>
+                    </div>
+
+                    <div id="b-fields-container" class="flex flex-col gap-6">
+                        ${state.currentBuilderForm.fields.map((f, i) => renderFieldCard(f, i, isQuiz)).join('')}
+                    </div>
+                    ${state.currentBuilderForm.fields.length === 0 ? `<div class="text-center p-12 bg-white border-2 border-dashed border-gray-200 rounded-3xl text-gray-400 font-bold flex flex-col items-center gap-3"><i class="fa-regular fa-square-plus text-4xl text-gray-300"></i> <span class="text-sm">Mulai buat pertanyaan Anda.</span></div>` : ''}
+
+                    <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-white px-2 py-2 rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.1)] border border-gray-100 flex gap-1 z-50 overflow-x-auto max-w-[90vw]">
+                        <button onclick="addField('text')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Teks Singkat"><i class="fa-solid fa-minus text-lg"></i></button>
+                        <button onclick="addField('paragraph')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Paragraf"><i class="fa-solid fa-align-left text-lg"></i></button>
+                        <button onclick="addField('radio')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Pilihan Ganda"><i class="fa-regular fa-circle-dot text-lg"></i></button>
+                        <button onclick="addField('checkbox')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Centang"><i class="fa-regular fa-square-check text-lg"></i></button>
+                        <button onclick="addField('dropdown')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Dropdown"><i class="fa-solid fa-caret-down text-lg"></i></button>
+                        <button onclick="addField('date')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Tanggal"><i class="fa-solid fa-calendar-day text-lg"></i></button>
+                        <button onclick="addField('time')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Waktu"><i class="fa-solid fa-clock text-lg"></i></button>
+                        <button onclick="addField('rating')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Rating"><i class="fa-solid fa-star text-lg"></i></button>
+                        <button onclick="addField('scale')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-gray-600 flex justify-center items-center transition" title="Skala Angka"><i class="fa-solid fa-arrows-left-right text-lg"></i></button>
+                        <button onclick="addField('file')" class="w-10 h-10 rounded-xl hover:bg-gray-50 text-green-600 flex justify-center items-center transition" title="Upload File"><i class="fa-solid fa-cloud-arrow-up text-lg"></i></button>
+                        <div class="w-px h-6 bg-gray-200 my-auto mx-1"></div>
+                        <button onclick="addField('section')" class="px-3 py-1 rounded-xl bg-blue-50 hover:bg-blue-100 text-edu-blue flex flex-col items-center justify-center gap-0.5 transition" title="Pisahkan Halaman"><i class="fa-solid fa-pause text-xs"></i><span class="text-[8px] font-extrabold uppercase">Section</span></button>
+                    </div>
+                </div>`;
+        }
+
+        function renderFieldCard(field, index, isQuiz) {
+            let sectionOptionsHtml = '<option value="next">Lanjut ke bagian berikutnya</option>';
+            let secCount = 1;
+            state.currentBuilderForm.fields.forEach((f, idx) => {
+                if (f.type === 'section' && idx > index) {
+                    secCount++;
+                    sectionOptionsHtml += `<option value="${idx}">Lanjut ke Bagian ${secCount} (${f.label})</option>`;
+                }
+            });
+            sectionOptionsHtml += '<option value="submit">Kirim Formulir</option>';
+
+            if (field.type === 'section') {
+                return `
+                    <div class="section-break"></div>
+                    <div class="bg-edu-blue p-5 rounded-2xl shadow-sm border border-blue-900 flex flex-col group text-white field-card" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondragend="dragEnd(event)">
+                        <div class="flex justify-between items-center w-full">
+                            <div class="flex items-center gap-3 w-full">
+                                <div class="cursor-grab hover:text-gray-300 p-2 -ml-2" title="Geser ke atas/bawah"><i class="fa-solid fa-grip-lines"></i></div>
+                                <i class="fa-solid fa-pause text-blue-300 text-lg"></i>
+                                <input type="text" class="bg-transparent font-bold text-lg focus:outline-none w-full placeholder-blue-300 text-white" value="${field.label || 'Bagian Baru'}" onchange="updateField(${index}, 'label', this.value)" placeholder="Nama Bagian/Halaman...">
+                            </div>
+                            <button onclick="deleteField(${index})" class="text-blue-300 hover:text-white p-2 rounded-lg bg-white/10 hover:bg-red-500 transition ml-2"><i class="fa-solid fa-trash text-sm"></i></button>
+                        </div>
+                        <div class="mt-4 bg-blue-950/40 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full border border-blue-800">
+                            <span class="text-[11px] font-bold text-blue-200 uppercase tracking-widest"><i class="fa-solid fa-route mr-1"></i> Setelah bagian ini selesai, arahkan ke:</span>
+                            <select class="flex-1 bg-blue-900 text-white text-xs px-3 py-2 rounded-lg border border-blue-700 outline-none font-bold cursor-pointer hover:bg-blue-800 transition w-full" onchange="updateField(${index}, 'nextAction', this.value)">
+                                ${sectionOptionsHtml.replace(`value="${field.nextAction || 'next'}"`, `value="${field.nextAction || 'next'}" selected`)}
+                            </select>
+                        </div>
+                    </div>`;
+            }
+
+            const isOptions = ['radio', 'checkbox', 'dropdown'].includes(field.type);
+            const canBranch = ['radio', 'dropdown'].includes(field.type);
+            let optionsHtml = '';
+
+            if (isOptions) {
+                const opts = field.options || [{label: 'Opsi 1', goTo: 'next'}];
+                const iconClass = field.type === 'radio' ? 'fa-circle-dot' : field.type === 'checkbox' ? 'fa-square-check' : 'fa-list-ol';
+                
+                let quizHtml = '';
+                if (isQuiz && canBranch) { 
+                    quizHtml = `
+                        <div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-check-double text-green-600"></i>
+                                <select class="text-sm bg-white border border-green-200 rounded-lg px-3 py-2 outline-none font-bold text-green-700 w-48 md:w-auto" onchange="updateField(${index}, 'correctAnswer', this.value)">
+                                    <option value="">-- Pilih Kunci --</option>
+                                    ${opts.map(opt => `<option value="${opt.label || opt}" ${field.correctAnswer === (opt.label || opt) ? 'selected' : ''}>Kunci: ${opt.label || opt}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-2 border-l border-green-200 pl-3">
+                                <span class="text-xs font-bold text-green-700">Poin:</span>
+                                <input type="number" min="0" class="w-16 px-2 py-1.5 border border-green-200 rounded-lg text-sm outline-none font-bold text-gray-700" value="${field.points || 10}" onchange="updateField(${index}, 'points', parseInt(this.value))">
+                            </div>
+                        </div>
+                    `;
+                }
+
+                optionsHtml = `
+                    <div class="mt-5 pl-3 border-l-2 border-edu-blue/20">
+                        <div class="space-y-2">
+                            ${opts.map((opt, optIdx) => `
+                                <div class="flex items-center gap-2 group flex-wrap">
+                                    <i class="fa-regular ${iconClass} text-gray-300 text-sm"></i>
+                                    <input type="text" class="flex-1 min-w-[150px] text-sm bg-gray-50 px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-edu-blue font-medium text-gray-700 transition" value="${opt.label || (typeof opt === 'string' ? opt : 'Opsi')}" onchange="updateSingleOption(${index}, ${optIdx}, 'label', this.value)" placeholder="Opsi jawaban...">
+                                    
+                                    ${field.logicEnabled && canBranch ? `
+                                        <select class="text-[11px] bg-blue-50 text-edu-blue font-bold px-2 py-2 rounded-lg border border-blue-100 outline-none max-w-[200px]" onchange="updateSingleOption(${index}, ${optIdx}, 'goTo', this.value)">
+                                            ${sectionOptionsHtml.replace(`value="${opt.goTo || 'next'}"`, `value="${opt.goTo || 'next'}" selected`)}
+                                        </select>
+                                    ` : ''}
+
+                                    <button onclick="removeOption(${index}, ${optIdx})" class="text-gray-300 hover:text-red-500 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-times text-sm"></i></button>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button onclick="addOption(${index})" class="mt-3 text-[11px] font-bold text-edu-blue bg-blue-50 px-3 py-1.5 rounded-md hover:bg-blue-100 transition"><i class="fa-solid fa-plus mr-1"></i> Tambahkan Opsi Lainnya</button>
+                        ${quizHtml}
+                    </div>`;
+            } else if (field.type === 'rating') {
+                optionsHtml = `
+                    <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-3">
+                        <span class="text-sm font-bold text-gray-700">Skala Maksimal:</span>
+                        <select class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none text-sm font-bold text-gray-600" onchange="updateField(${index}, 'maxRating', this.value)">
+                            <option value="5" ${field.maxRating == 5 || !field.maxRating ? 'selected':''}>5 Bintang</option>
+                            <option value="10" ${field.maxRating == 10 ? 'selected':''}>10 Bintang</option>
+                        </select>
+                    </div>`;
+            } else if (field.type === 'scale') {
+                optionsHtml = `
+                    <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-xl flex flex-col gap-4">
+                        <div class="flex items-center gap-3">
+                            <select class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none text-sm font-bold text-gray-600" onchange="updateField(${index}, 'minScale', this.value)">
+                                <option value="0" ${field.minScale == 0 ? 'selected':''}>0</option>
+                                <option value="1" ${field.minScale == 1 || !field.minScale ? 'selected':''}>1</option>
+                            </select>
+                            <span class="text-sm font-bold text-gray-500">sampai</span>
+                            <select class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none text-sm font-bold text-gray-600" onchange="updateField(${index}, 'maxScale', this.value)">
+                                ${[2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${field.maxScale == n || (!field.maxScale && n==5) ? 'selected':''}>${n}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold text-gray-400 w-12 uppercase">Min:</span>
+                            <input type="text" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" placeholder="Label terkecil (opsional)" value="${field.minLabel || ''}" onchange="updateField(${index}, 'minLabel', this.value)">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-bold text-gray-400 w-12 uppercase">Max:</span>
+                            <input type="text" class="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white" placeholder="Label terbesar (opsional)" value="${field.maxLabel || ''}" onchange="updateField(${index}, 'maxLabel', this.value)">
+                        </div>
+                    </div>`;
+            }
+
+            return `
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-100 field-card relative group" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})" ondragenter="dragEnter(event)" ondragleave="dragLeave(event)" ondragend="dragEnd(event)">
+                    
+                    <div class="absolute top-2 left-1/2 transform -translate-x-1/2 cursor-grab text-gray-300 hover:text-gray-500 p-1 rounded transition opacity-0 group-hover:opacity-100" title="Geser ke atas/bawah">
+                        <i class="fa-solid fa-grip-lines"></i>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-4 mb-2 mt-2">
+                        <input type="text" class="flex-1 text-base font-bold text-gray-900 border-b-2 border-transparent hover:border-gray-200 focus:border-edu-blue pb-1 focus:outline-none transition placeholder-gray-300" value="${field.label}" onchange="updateField(${index}, 'label', this.value)" placeholder="Pertanyaan Anda...">
+                        
+                        <select class="w-full md:w-48 text-sm bg-gray-50 px-3 py-2 rounded-xl border border-gray-200 focus:outline-none font-bold text-gray-600" onchange="updateField(${index}, 'type', this.value)">
+                            <option value="text" ${field.type==='text'?'selected':''}>Jawaban Singkat</option>
+                            <option value="paragraph" ${field.type==='paragraph'?'selected':''}>Paragraf</option>
+                            <option value="radio" ${field.type==='radio'?'selected':''}>Pilihan Ganda</option>
+                            <option value="checkbox" ${field.type==='checkbox'?'selected':''}>Kotak Centang</option>
+                            <option value="dropdown" ${field.type==='dropdown'?'selected':''}>Dropdown</option>
+                            <option value="rating" ${field.type==='rating'?'selected':''}>Rating Bintang</option>
+                            <option value="scale" ${field.type==='scale'?'selected':''}>Skala Angka</option>
+                            <option value="date" ${field.type==='date'?'selected':''}>Tanggal</option>
+                            <option value="time" ${field.type==='time'?'selected':''}>Waktu (Jam)</option>
+                            <option value="file" ${field.type==='file'?'selected':''}>Upload File</option>
+                        </select>
+                    </div>
+                    
+                    ${optionsHtml}
+                    
+                    <div class="mt-5 pt-4 border-t border-gray-100 flex flex-wrap justify-end items-center gap-3">
+                        <button onclick="insertFieldBelow(${index})" class="mr-auto text-[11px] font-bold text-gray-500 bg-gray-50 hover:bg-blue-50 hover:text-edu-blue px-3 py-1.5 rounded-lg transition border border-gray-200" title="Sisipkan Pertanyaan di Bawah Ini"><i class="fa-solid fa-plus"></i> Sisipkan di Bawah</button>
+
+                        ${canBranch ? `
+                        <label class="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-lg transition">
+                            <input type="checkbox" class="w-3.5 h-3.5 rounded text-edu-blue" ${field.logicEnabled ? 'checked' : ''} onchange="updateField(${index}, 'logicEnabled', this.checked)"> Logika Cabang
+                        </label>
+                        <div class="w-px h-4 bg-gray-200 hidden md:block"></div>
+                        ` : ''}
+
+                        <label class="flex items-center gap-1.5 text-xs font-bold text-gray-700 cursor-pointer hover:bg-gray-50 px-2 py-1.5 rounded-lg transition">
+                            <input type="checkbox" class="w-3.5 h-3.5 text-edu-blue rounded" ${field.required ? 'checked' : ''} onchange="updateField(${index}, 'required', this.checked)"> Wajib Diisi
+                        </label>
+                        <div class="w-px h-4 bg-gray-200"></div>
+                        <button onclick="deleteField(${index})" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-lg transition" title="Hapus"><i class="fa-solid fa-trash text-sm"></i></button>
+                    </div>
+                </div>`;
+        }
+
+        function updateFormHeader() {
+            state.currentBuilderForm.title = document.getElementById('b-title').value;
+            state.currentBuilderForm.description = document.getElementById('b-desc').value;
+            state.currentBuilderForm.slug = document.getElementById('b-slug').value.replace(/\s+/g, '-').toLowerCase();
+            const isQuiz = document.getElementById('b-isQuiz').checked ? 'isQuiz_true' : 'isQuiz_false';
+            const bannerLink = document.getElementById('b-banner').value;
+            state.currentBuilderForm.bannerUrl = isQuiz + '|' + bannerLink;
+            state.currentBuilderForm.status = document.getElementById('b-status').value;
+            
+            if (bannerLink) {
+                renderFormBuilder(document.getElementById('admin-content-area'), state.currentBuilderForm);
+            }
+        }
+
+        function addField(type) {
+            let label = type === 'section' ? 'Bagian Baru' : 'Pertanyaan Baru';
+            const newField = { id: 'q_' + Date.now(), type: type, label: label, required: false };
+            if (['radio', 'checkbox', 'dropdown'].includes(type)) newField.options = [{label: 'Opsi 1', goTo: 'next'}];
+            state.currentBuilderForm.fields.push(newField);
+            refreshBuilderView();
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 50);
+        }
+
+        function insertFieldBelow(index) {
+            const newField = { id: 'q_' + Date.now(), type: 'radio', label: 'Pertanyaan Baru', required: false, options: [{label: 'Opsi 1', goTo: 'next'}] };
+            state.currentBuilderForm.fields.splice(index + 1, 0, newField);
+            refreshBuilderView();
+        }
+
+        function updateField(index, key, value) {
+            state.currentBuilderForm.fields[index][key] = value;
+            if(['type', 'logicEnabled', 'correctAnswer', 'nextAction', 'maxRating', 'minScale', 'maxScale'].includes(key)) refreshBuilderView();
+        }
+
+        function updateSingleOption(fieldIndex, optionIndex, key, value) {
+            let opt = state.currentBuilderForm.fields[fieldIndex].options[optionIndex];
+            if (typeof opt === 'string') { opt = { label: opt, goTo: 'next' }; }
+            opt[key] = value;
+            state.currentBuilderForm.fields[fieldIndex].options[optionIndex] = opt;
+            if(key === 'label') refreshBuilderView(); 
+        }
+
+        function addOption(fieldIndex) {
+            let opts = state.currentBuilderForm.fields[fieldIndex].options || [];
+            opts.push({ label: `Opsi ${opts.length + 1}`, goTo: 'next' });
+            state.currentBuilderForm.fields[fieldIndex].options = opts;
+            refreshBuilderView();
+        }
+
+        function removeOption(fieldIndex, optionIndex) {
+            if(state.currentBuilderForm.fields[fieldIndex].options.length > 1) {
+                state.currentBuilderForm.fields[fieldIndex].options.splice(optionIndex, 1); refreshBuilderView();
+            } else { Swal.fire({toast: true, position: 'top-end', title: 'Minimal 1 opsi', icon: 'warning', timer: 2000, showConfirmButton: false}); }
+        }
+
+        function deleteField(index) { state.currentBuilderForm.fields.splice(index, 1); refreshBuilderView(); }
+        function refreshBuilderView() { updateFormHeader(); renderFormBuilder(document.getElementById('admin-content-area'), state.currentBuilderForm); }
+
+        async function saveForm() {
+            updateFormHeader();
+            if(!state.currentBuilderForm.title || !state.currentBuilderForm.slug) return Swal.fire('Error', 'Judul dan Slug wajib diisi.', 'warning');
+            
+            Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            state.currentBuilderForm.fields.forEach(f => {
+                if(f.options) { f.options = f.options.map(o => typeof o === 'string' ? {label: o, goTo:'next'} : o); }
+            });
+
+            const payload = { form: { ...state.currentBuilderForm, fields: JSON.stringify(state.currentBuilderForm.fields) }, userEmail: state.userEmail };
+            const res = await api('saveForm', payload);
+            if(res.success) { Swal.fire({ icon: 'success', title: 'Tersimpan!', timer: 1500, showConfirmButton: false }); navigateAdmin('forms'); } 
+            else { Swal.fire('Gagal', res.message, 'error'); }
+        }
+
+        function renderUserManagement(container) {
+            container.innerHTML = PRELOADER_HTML;
+            api('getUsers').then(res => {
+                if(res.success) {
+                    state.users = res.users;
+                    container.innerHTML = `
+                        <div class="fade-in max-w-4xl mx-auto pb-10">
+                            <div class="flex justify-between items-center mb-6">
+                                <div><h2 class="text-2xl font-extrabold text-gray-900">Manajemen Pengguna</h2><p class="text-gray-500 text-sm">Kelola akun akses untuk divisi internal.</p></div>
+                                <button onclick="openUserModal()" class="bg-edu-blue text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-plus"></i> Tambah Akun</button>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
+                                        <tr><th class="p-4 font-bold">Email / Username</th><th class="p-4 font-bold">Role</th><th class="p-4 font-bold text-center">Aksi</th></tr>
+                                    </thead>
+                                    <tbody class="text-sm divide-y divide-gray-100">
+                                        ${state.users.map(u => `
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="p-4 font-bold text-gray-800">${u.email}</td>
+                                                <td class="p-4"><span class="bg-blue-100 text-edu-blue px-2 py-1 rounded text-[10px] font-bold uppercase">${u.role}</span></td>
+                                                <td class="p-4 text-center"><button onclick="deleteUser('${u.email}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition"><i class="fa-solid fa-trash"></i></button></td>
+                                            </tr>
+                                        `).join('')}
+                                        ${state.users.length === 0 ? '<tr><td colspan="3" class="p-8 text-center text-gray-400">Belum ada akun divisi.</td></tr>' : ''}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                } else { container.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">${res.message}</div>`; }
+            });
+        }
+
+        async function openUserModal() {
+            const { value: formValues } = await Swal.fire({
+                title: 'Tambah Akun Divisi',
+                html: '<input id="swal-email" class="swal2-input" placeholder="Email / Username" type="email"><input id="swal-pass" class="swal2-input" placeholder="Password" type="password">',
+                focusConfirm: false, showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#0044CC',
+                preConfirm: () => { return { email: document.getElementById('swal-email').value, password: document.getElementById('swal-pass').value, role: 'divisi' } }
+            });
+
+            if (formValues && formValues.email && formValues.password) {
+                Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                const res = await api('saveUser', { user: formValues });
+                if(res.success) { Swal.fire({ icon: 'success', title: 'Tersimpan', showConfirmButton: false, timer: 1500 }); renderUserManagement(document.getElementById('admin-content-area')); } 
+                else { Swal.fire('Gagal', res.message, 'error'); }
+            }
+        }
+
+        async function deleteUser(email) {
+            if(confirm('Hapus akun ini?')) {
+                Swal.fire({title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                const res = await api('deleteUser', { email: email });
+                if(res.success) { renderUserManagement(document.getElementById('admin-content-area')); Swal.fire({ toast:true, position:'top', icon: 'success', title: 'Dihapus', showConfirmButton: false, timer: 1500 }); }
+            }
+        }
+
+        function renderSettings(container) {
+            container.innerHTML = `
+                <div class="fade-in max-w-2xl mx-auto pb-10">
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <h2 class="text-2xl font-extrabold text-gray-900 mb-6">Pengaturan Global</h2>
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">URL Logo Aplikasi</label>
+                                <input type="text" id="set-logo" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-edu-blue focus:ring-1 focus:ring-edu-blue transition outline-none" value="${state.settings.logoUrl || ''}" placeholder="https://...">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">URL Favicon</label>
+                                <input type="text" id="set-favicon" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-edu-blue focus:ring-1 focus:ring-edu-blue transition outline-none" value="${state.settings.faviconUrl || ''}" placeholder="https://...">
+                            </div>
+                            <div class="pt-4 border-t border-gray-100 flex justify-end">
+                                <button onclick="saveSettings()" class="bg-edu-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl font-bold shadow-sm transition text-sm">Simpan Pengaturan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function saveSettings() {
+            const logo = document.getElementById('set-logo').value;
+            const fav = document.getElementById('set-favicon').value;
+            Swal.fire({title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            
+            const newSettings = { logoUrl: logo, faviconUrl: fav };
+            const res = await api('saveSettings', { settings: newSettings });
+            
+            if(res.success) {
+                state.settings = newSettings;
+                if(logo) { APP_LOGO_URL = logo; document.getElementById('sidebar-logo').src = logo; document.getElementById('login-logo').src = logo; }
+                if(fav) { APP_FAVICON_URL = fav; setFavicon(fav); }
+                Swal.fire({ icon: 'success', title: 'Pengaturan Disimpan', showConfirmButton: false, timer: 1500 });
+            } else { Swal.fire('Gagal', res.message, 'error'); }
+        }
+
+        let currentFormResponses = []; 
+
+        async function renderResponseTable(container, formId) {
+            const form = state.forms.find(f => f.id === formId);
+            container.innerHTML = PRELOADER_HTML;
+            const res = await api('getResponses', { formId: formId, userEmail: state.userEmail, userRole: state.userRole });
+            
+            if(!res.success) { container.innerHTML = `<div class="text-red-500 font-bold p-10 bg-white rounded-3xl">${res.message}</div>`; return; }
+
+            const responses = res.responses || [];
+            currentFormResponses = responses;
+            let headers = ['Tanggal'];
+            
+            if(responses.length > 0) {
+                responses.forEach(r => {
+                    if(r.data && typeof r.data === 'object') { Object.keys(r.data).forEach(k => { if(!headers.includes(k)) headers.push(k); }); }
+                });
+            } else {
+                let schemaFields = typeof form.fields === 'string' ? JSON.parse(form.fields || '[]') : form.fields;
+                schemaFields.forEach(f => { if(f.type !== 'section') headers.push(f.label); });
+            }
+
+            container.innerHTML = `
+                <div class="fade-in bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full max-h-[85vh]">
+                    <div class="p-5 md:p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 gap-4 z-20">
+                        <div>
+                            <button onclick="navigateAdmin('responses')" class="text-gray-500 hover:text-edu-blue font-bold text-xs mb-2 flex items-center gap-1.5 transition"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                            <h2 class="text-xl font-extrabold text-gray-900 uppercase tracking-tight">${form.title}</h2>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <button onclick="copyPublicResponseLink('${form.slug}')" class="bg-blue-50 hover:bg-blue-100 text-edu-blue px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-sm border border-blue-200"><i class="fa-solid fa-share-nodes"></i> Share Live Dashboard</button>
+                            <div class="bg-gray-200/60 p-1 rounded-xl flex gap-1 mx-2">
+                                <button onclick="toggleResponseView('table')" id="btn-view-table" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
+                                <button onclick="toggleResponseView('dashboard')" id="btn-view-dashboard" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition">Dashboard Analitik</button>
+                            </div>
+                            <button onclick="exportToExcel('${form.title}')" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-sm"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                        </div>
+                    </div>
+                    
+                    <div id="view-layer-table" class="flex-1 flex flex-col min-h-0">
+                        <div class="flex-1 overflow-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]" id="response-table">
+                                <thead class="sticky top-0 bg-white shadow-sm z-10"><tr class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest bg-gray-100">
+                                    ${headers.map(h => `<th class="p-4 border-b border-gray-200">${h}</th>`).join('')}
+                                </tr></thead>
+                                <tbody class="text-sm divide-y divide-gray-100">
+                                    ${responses.length > 0 ? responses.map(r => `
+                                        <tr class="hover:bg-blue-50 transition">
+                                            <td class="p-4 text-gray-500 font-medium text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
+                                            ${headers.slice(1).map(h => `<td class="p-4 text-gray-800 text-sm max-w-[200px] truncate" title="${r.data[h]||'-'}">${renderAnswerCell(r.data[h])}</td>`).join('')}
+                                        </tr>`).join('') : `<tr><td colspan="${headers.length}" class="p-12 text-center text-gray-400 font-bold text-sm">Belum ada respons.</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="view-layer-dashboard" class="overflow-auto flex-1 p-6 md:p-8 bg-gray-50 hidden">
+                        <div id="dashboard-charts-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+                    </div>
+                </div>`;
+                
+            setTimeout(() => { generateDashboardCharts(form); }, 100);
+        }
+
+        function toggleResponseView(type) {
+            document.getElementById('view-layer-table').classList.add('hidden');
+            document.getElementById('view-layer-dashboard').classList.add('hidden');
+            document.getElementById('btn-view-table').className = 'px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-view-dashboard').className = 'px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
+            
+            document.getElementById(`view-layer-${type}`).classList.remove('hidden');
+            document.getElementById(`btn-view-${type}`).className = 'px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition';
+        }
+
+        function generateSpecificDashboardCharts(fields, responses, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            if(responses.length === 0) {
+                container.innerHTML = '<div class="col-span-full p-10 text-center text-gray-400 font-bold text-sm bg-white rounded-2xl">Belum ada data untuk dianalisis.</div>';
+                return;
+            }
+
+            let chartCount = 0;
+            const colors = ['#0044CC', '#FACC15', '#22C55E', '#EF4444', '#8B5CF6', '#F97316', '#06B6D4', '#EC4899'];
+
+            fields.forEach((f, idx) => {
+                if (['radio', 'dropdown', 'checkbox', 'scale', 'rating'].includes(f.type)) {
+                    chartCount++;
+                    let dataCount = {};
+                    responses.forEach(r => {
+                        let answer = r.data[f.label];
+                        if (answer) {
+                            if (Array.isArray(answer)) { answer.forEach(val => { dataCount[val] = (dataCount[val] || 0) + 1; }); } 
+                            else { dataCount[answer] = (dataCount[answer] || 0) + 1; }
+                        }
+                    });
+
+                    const labels = Object.keys(dataCount);
+                    const dataPoints = Object.values(dataCount);
+
+                    if(labels.length > 0) {
+                        const chartId = `${containerId}_chart_${idx}`;
+                        container.insertAdjacentHTML('beforeend', `
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
+                                <h3 class="text-sm font-bold text-gray-800 mb-4 h-10 line-clamp-2">${f.label}</h3>
+                                <div class="relative flex-1 min-h-[250px] w-full flex justify-center items-center">
+                                    <canvas id="${chartId}"></canvas>
+                                </div>
+                            </div>
+                        `);
+
+                        const ctx = document.getElementById(chartId).getContext('2d');
+                        new Chart(ctx, {
+                            type: (f.type === 'checkbox' || f.type === 'scale' || f.type === 'rating') ? 'bar' : 'pie',
+                            data: { labels: labels, datasets: [{ label: 'Jumlah Jawaban', data: dataPoints, backgroundColor: colors, borderWidth: 1, borderRadius: 4 }] },
+                            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: "'Inter', sans-serif", size: 11 } } } } }
+                        });
+                    }
+                }
+            });
+
+            if(chartCount === 0) { container.innerHTML = '<div class="col-span-full p-10 text-center text-gray-400 font-bold text-sm bg-white rounded-2xl">Tidak ada pertanyaan Pilihan/Skala yang bisa dianalisis.</div>'; }
+        }
+
+        function generateDashboardCharts(form) {
+            const fields = typeof form.fields === 'string' ? JSON.parse(form.fields) : form.fields;
+            generateSpecificDashboardCharts(fields, currentFormResponses, 'dashboard-charts-container');
+        }
+
+        function renderAnswerCell(val) {
+            if(!val) return '-';
+            if(typeof val === 'string' && (val.includes('drive.google.com') || val.startsWith('http'))) {
+                return `<a href="${val}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-100 transition whitespace-nowrap inline-flex items-center shadow-sm border border-blue-100"><i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Buka File</a>`;
+            }
+            if(Array.isArray(val)) return val.join(', '); 
+            return val;
+        }
+
+        function exportToExcel(title) {
+            const table = document.getElementById("response-table");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Responses"});
+            XLSX.writeFile(wb, `${title}.xlsx`);
+        }
+
+        async function loadPublicResponses(slug) {
+            const container = document.getElementById('public-responses-content');
+            container.innerHTML = PRELOADER_HTML; 
+
+            const res = await api('getPublicResponses', { slug: slug });
+            if(!res.success) {
+                container.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center shadow-sm border-t-8 border-t-red-500 max-w-md mx-auto mt-20"><h2 class="text-xl font-extrabold text-gray-900 mb-2">Akses Ditolak</h2><p class="text-gray-500 text-sm font-medium">${res.message}</p></div>`; return;
+            }
+
+            const responses = res.responses || [];
+            globalPublicResponses = responses;
+            globalPublicFormTitle = res.formTitle;
+            const fields = typeof res.fields === 'string' ? JSON.parse(res.fields || '[]') : (res.fields || []);
+
+            let headers = ['Tanggal'];
+            if(responses.length > 0) {
+                responses.forEach(r => {
+                    if(r.data && typeof r.data === 'object') { Object.keys(r.data).forEach(k => { if(!headers.includes(k)) headers.push(k); }); }
+                });
+            } else {
+                fields.forEach(f => { if(f.type !== 'section') headers.push(f.label); });
+            }
+            globalPublicHeaders = headers;
+
+            container.innerHTML = `
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div>
+                        <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tight">${res.formTitle}</h1>
+                        <p class="text-gray-500 text-sm font-medium">Public Live Response Dashboard</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <div class="bg-gray-100 p-1 rounded-xl flex gap-1 flex-1 md:flex-none">
+                            <button onclick="togglePublicResView('table')" id="btn-pub-table" class="flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
+                            <button onclick="togglePublicResView('dashboard')" id="btn-pub-dashboard" class="flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition">Analitik</button>
+                        </div>
+                        <button onclick="exportPublicExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition shadow-sm w-full md:w-auto"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                    </div>
+                </div>
+
+                <!-- TABEL DATA PUBLIK -->
+                <div id="pub-layer-table" class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl shadow-sm border border-gray-100 mb-10 overflow-hidden">
+                    
+                    <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-3 bg-gray-50">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
+                            <input type="text" id="pub-search" placeholder="Cari (ketik nama, email, jawaban)..." class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue transition font-medium text-gray-700" onkeyup="filterPublicData()">
+                        </div>
+                        <div class="flex items-center gap-2 w-full md:w-auto">
+                            <input type="date" id="pub-date-start" class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Dari Tanggal">
+                            <span class="text-gray-400 font-bold">-</span>
+                            <input type="date" id="pub-date-end" class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Sampai Tanggal">
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]" id="public-response-table">
+                            <thead class="sticky top-0 bg-gray-50 shadow-sm z-10">
+                                <tr class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest border-b border-gray-100">
+                                    ${headers.map(h => `<th class="p-4 border-b border-gray-200">${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody id="pub-tbody" class="text-sm divide-y divide-gray-100">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- DASHBOARD ANALITIK PUBLIK -->
+                <div id="pub-layer-dashboard" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pb-20"></div>
+            `;
+
+            renderPublicTable(globalPublicResponses);
+            setTimeout(() => { generateSpecificDashboardCharts(fields, responses, 'pub-layer-dashboard'); }, 100);
+        }
+
+        function renderPublicTable(data) {
+            const tbody = document.getElementById('pub-tbody');
+            if(!tbody) return;
+            
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${globalPublicHeaders.length}" class="p-12 text-center text-gray-400 font-bold text-sm bg-white">Belum ada respons atau tidak ada data yang cocok dengan pencarian Anda.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = data.map(r => `
+                <tr class="hover:bg-blue-50 transition bg-white">
+                    <td class="p-4 text-gray-500 font-medium text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
+                    ${globalPublicHeaders.slice(1).map(h => `<td class="p-4 text-gray-800 text-sm max-w-[200px] truncate" title="${r.data[h]||'-'}">${renderAnswerCell(r.data[h])}</td>`).join('')}
+                </tr>`).join('');
+        }
+
+        function filterPublicData() {
+            const search = document.getElementById('pub-search').value.toLowerCase();
+            const dateStart = document.getElementById('pub-date-start').value;
+            const dateEnd = document.getElementById('pub-date-end').value;
+
+            let filtered = globalPublicResponses.filter(r => {
+                let matchSearch = false;
+                if(!search) { matchSearch = true; }
+                else {
+                    for(let h of globalPublicHeaders) {
+                        let val = h === 'Tanggal' ? new Date(r.date).toLocaleString('id-ID') : (r.data[h] || '');
+                        if(String(val).toLowerCase().includes(search)) { matchSearch = true; break; }
+                    }
+                }
+
+                let matchDate = true;
+                if(dateStart || dateEnd) {
+                    let rDate = new Date(r.date);
+                    rDate.setHours(0,0,0,0);
+                    if(dateStart) {
+                        let sDate = new Date(dateStart);
+                        sDate.setHours(0,0,0,0);
+                        if(rDate < sDate) matchDate = false;
+                    }
+                    if(dateEnd) {
+                        let eDate = new Date(dateEnd);
+                        eDate.setHours(23,59,59,999);
+                        if(rDate > eDate) matchDate = false;
+                    }
+                }
+                return matchSearch && matchDate;
+            });
+
+            renderPublicTable(filtered);
+        }
+
+        function exportPublicExcel() {
+            if(globalPublicResponses.length === 0) {
+                Swal.fire({toast: true, position: 'top-end', title: 'Tidak ada data untuk diekspor', icon: 'warning', timer: 2000, showConfirmButton: false});
+                return;
+            }
+            const table = document.getElementById("public-response-table");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Responses"});
+            XLSX.writeFile(wb, `${globalPublicFormTitle}_Public_Responses.xlsx`);
+        }
+
+        function togglePublicResView(type) {
+            document.getElementById('pub-layer-table').classList.add('hidden');
+            document.getElementById('pub-layer-dashboard').classList.add('hidden');
+            document.getElementById('btn-pub-table').className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-pub-dashboard').className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition';
+            
+            document.getElementById(`pub-layer-${type}`).classList.remove('hidden');
+            document.getElementById(`btn-pub-${type}`).className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-edu-blue shadow-sm transition';
+        }
+
+        async function loadPublicForm(slug) {
+            const container = document.getElementById('public-form-container');
+            const res = await api('getFormBySlug', { slug: slug });
+            
+            if(!res.success) {
+                container.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center shadow-sm border-t-8 border-t-red-500 max-w-md mx-auto mt-20"><h2 class="text-xl font-extrabold text-gray-900 mb-2">Form Tidak Ditemukan</h2><p class="text-gray-500 text-sm font-medium">Tautan tidak valid atau telah ditutup.</p></div>`; return;
+            }
+
+            const form = res.form;
+            state.publicFormSchema = form;
+            if(typeof form.fields === 'string') form.fields = JSON.parse(form.fields || '[]');
+
+            let pages = [ { id: 'page_0', fields: [], sectionField: null } ];
+            let currentSectionIndex = 0;
+            
+            form.fields.forEach((f, globalIndex) => {
+                f._globalIndex = globalIndex;
+                if(f.type === 'section') {
+                    currentSectionIndex++;
+                    pages.push({ id: `page_${currentSectionIndex}`, title: f.label, fields: [], sectionField: f });
+                } else { pages[pages.length-1].fields.push(f); }
+            });
+
+            state.publicPages = pages;
+            state.publicCurrentPage = 0;
+            state.publicPageHistory = [0];
+
+            let bannerHtml = '';
+            let isQuizMode = form.bannerUrl === 'isQuiz_true' || form.bannerUrl?.startsWith('isQuiz_true|');
+            state.publicFormSchema.isQuizMode = isQuizMode;
+
+            let bannerLink = '';
+            if (form.bannerUrl && form.bannerUrl.includes('|')) { bannerLink = form.bannerUrl.split('|')[1]; }
+            else if (form.bannerUrl && form.bannerUrl !== 'isQuiz_true' && form.bannerUrl !== 'isQuiz_false') { bannerLink = form.bannerUrl; }
+
+            if (bannerLink) {
+                bannerHtml = `<div class="banner-img-container"><img src="${bannerLink}" onerror="this.src='https://placehold.co/1600x400/1E3E62/FFFFFF?text=Banner+Error'"></div>`;
+            } else {
+                bannerHtml = `
+                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b-[4px] border-edu-blue rounded-t-2xl">
+                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
+                    <div class="flex-1">
+                        <h1 class="text-edu-blue font-black text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
+                        <p class="text-gray-700 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
+                        <p class="text-gray-800 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
+                        <p class="kop-surat-motto text-[10px] md:text-[11px]">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
+                    </div>
+                </div>`;
+            }
+
+            container.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 fade-in">
+                    ${bannerHtml}
+                    <div class="p-6 md:p-8">
+                        <h1 class="text-lg md:text-xl font-bold text-gray-900 mb-2 leading-tight">${form.title}</h1>
+                        <p class="text-gray-600 font-medium whitespace-pre-wrap leading-relaxed text-[13px]">${form.description}</p>
+                    </div>
+                </div>
+                
+                <form id="public-submit-form" onsubmit="submitPublicForm(event)">
+                    <div id="pages-container">${pages.map((page, index) => renderPublicPage(page, index)).join('')}</div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4 pt-4 border-t border-gray-200">
+                        <div class="text-[10px] text-gray-400 font-bold flex items-center gap-1.5 uppercase tracking-widest"><i class="fa-solid fa-shield-halved"></i> All Education</div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button type="button" id="btn-prev" onclick="changePage(-1)" class="hidden bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl text-[13px] font-bold transition flex-1 sm:flex-none"><i class="fa-solid fa-arrow-left mr-1"></i> Kembali</button>
+                            <button type="button" id="btn-next" onclick="changePage(1)" class="${pages.length > 1 ? '' : 'hidden'} bg-edu-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl text-[13px] font-bold shadow-sm transition flex-1 sm:flex-none">Selanjutnya <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                            <button type="submit" id="btn-submit-form" class="${pages.length > 1 ? 'hidden' : ''} bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-[13px] font-bold shadow-sm transition flex-1 sm:flex-none flex justify-center items-center gap-2">Kirim Jawaban <i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </form>`;
+            updatePageVisibility();
+        }
+
+        function renderPublicPage(page, pageIndex) {
+            let header = page.title ? `<div class="bg-blue-50 border-l-4 border-edu-blue p-5 rounded-2xl mb-5"><h3 class="text-sm font-bold text-edu-blue">${page.title}</h3></div>` : '';
+            let fieldsHtml = page.fields.map(f => renderPublicField(f)).join('');
+            return `<div class="form-page fade-in" id="page-dom-${pageIndex}" style="display: none;">${header}${fieldsHtml}</div>`;
+        }
+
+        // Global Helper for Rating Stars
+        window.setPublicRating = function(fieldId, value, max) {
+            document.getElementById(`rating_val_${fieldId}`).value = value;
+            const container = document.getElementById(`rating_container_${fieldId}`);
+            const stars = container.querySelectorAll('i');
+            stars.forEach((star, idx) => {
+                if(idx < value) {
+                    star.classList.remove('fa-regular', 'text-gray-300');
+                    star.classList.add('fa-solid', 'text-edu-gold');
+                } else {
+                    star.classList.remove('fa-solid', 'text-edu-gold');
+                    star.classList.add('fa-regular', 'text-gray-300');
+                }
+            });
+        }
+
+        function renderPublicField(f) {
+            const reqHtml = f.required ? `<span class="text-red-500 ml-1">*</span>` : '';
+            const reqAttr = f.required ? 'required' : '';
+            let inputHtml = '';
+            const opts = f.options ? f.options.map(o => typeof o === 'string' ? o : o.label) : [];
+
+            if (f.type === 'text') { inputHtml = `<input type="text" name="${f.label}" class="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-edu-blue transition bg-transparent text-[13px] placeholder-gray-400" placeholder="Jawaban Anda..." ${reqAttr}>`; } 
+            else if (f.type === 'paragraph') { inputHtml = `<textarea name="${f.label}" rows="3" class="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-edu-blue transition resize-none bg-transparent text-[13px] placeholder-gray-400" placeholder="Jawaban panjang Anda..." ${reqAttr}></textarea>`; } 
+            else if (f.type === 'radio') { inputHtml = `<div class="space-y-2">` + opts.map(opt => `<label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition"><input type="radio" name="${f.label}" value="${opt}" class="w-4 h-4 text-edu-blue focus:ring-edu-blue border-gray-300" data-field-id="${f._globalIndex}" ${reqAttr}> <span class="text-gray-700 font-medium text-[13px]">${opt}</span></label>`).join('') + `</div>`; } 
+            else if (f.type === 'checkbox') { inputHtml = `<div class="space-y-2">` + opts.map(opt => `<label class="flex items-center gap-3 cursor-pointer p-2 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-200 transition"><input type="checkbox" name="${f.label}[]" value="${opt}" class="w-4 h-4 text-edu-blue rounded border-gray-300 focus:ring-edu-blue"> <span class="text-gray-700 font-medium text-[13px]">${opt}</span></label>`).join('') + `</div>`; } 
+            else if (f.type === 'dropdown') { inputHtml = `<select name="${f.label}" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-edu-blue bg-white text-[13px]" data-field-id="${f._globalIndex}" ${reqAttr}><option value="" disabled selected>Pilih salah satu...</option>${opts.map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`; } 
+            else if (f.type === 'rating') {
+                let ratingMax = f.maxRating || 5;
+                inputHtml = `<div class="flex gap-2" id="rating_container_${f._globalIndex}">
+                    <input type="hidden" name="${f.label}" id="rating_val_${f._globalIndex}" class="rating-hidden" data-required="${f.required ? 'true' : 'false'}">
+                    ${Array.from({length: ratingMax}, (_, i) => i+1).map(num => `
+                        <i class="fa-regular fa-star text-2xl text-gray-300 cursor-pointer hover:text-edu-gold transition" onclick="setPublicRating('${f._globalIndex}', ${num}, ${ratingMax})"></i>
+                    `).join('')}
+                </div>`;
+            }
+            else if (f.type === 'scale') {
+                let minS = parseInt(f.minScale || 1);
+                let maxS = parseInt(f.maxScale || 5);
+                let minL = f.minLabel || '';
+                let maxL = f.maxLabel || '';
+                let radios = [];
+                for(let i=minS; i<=maxS; i++) {
+                    radios.push(`<div class="flex flex-col items-center gap-2"><label class="cursor-pointer p-2 rounded-full hover:bg-blue-50 transition flex items-center justify-center"><input type="radio" name="${f.label}" value="${i}" class="w-4 h-4 text-edu-blue focus:ring-edu-blue border-gray-300" ${reqAttr}></label><span class="text-[11px] font-bold text-gray-600">${i}</span></div>`);
+                }
+                inputHtml = `<div class="flex items-end justify-between gap-2 overflow-x-auto pb-2">
+                    ${minL ? `<div class="text-[11px] font-medium text-gray-500 pb-6 text-center max-w-[80px] leading-tight">${minL}</div>` : ''}
+                    <div class="flex gap-4 sm:gap-6">${radios.join('')}</div>
+                    ${maxL ? `<div class="text-[11px] font-medium text-gray-500 pb-6 text-center max-w-[80px] leading-tight">${maxL}</div>` : ''}
+                </div>`;
+            }
+            else if (f.type === 'date') { inputHtml = `<input type="date" name="${f.label}" class="w-full md:w-auto border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-edu-blue bg-white text-[13px] text-gray-700" ${reqAttr}>`; } 
+            else if (f.type === 'time') { inputHtml = `<input type="time" name="${f.label}" class="w-full md:w-auto border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-edu-blue bg-white text-[13px] text-gray-700" ${reqAttr}>`; } 
+            else if (f.type === 'file') { inputHtml = `<input type="file" name="${f.label}" class="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-blue-50 file:text-edu-blue hover:file:bg-blue-100 transition cursor-pointer border border-dashed border-gray-300 p-3 rounded-lg bg-gray-50" ${reqAttr}>`; }
+
+            return `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-5 transition-all focus-within:border-edu-blue focus-within:shadow-md"><label class="block text-[13px] font-bold text-gray-800 mb-3">${f.label} ${reqHtml}</label>${inputHtml}</div>`;
+        }
+
+        function changePage(step) {
+            const currentContainer = document.getElementById(`page-dom-${state.publicCurrentPage}`);
+            
+            if(step === 1) {
+                const inputs = currentContainer.querySelectorAll('input, select, textarea');
+                for(let el of inputs) { 
+                    if(el.classList.contains('rating-hidden') && el.getAttribute('data-required') === 'true' && !el.value) {
+                        Swal.fire({toast:true, position:'top', title:'Terdapat rating yang wajib diisi.', icon:'warning', showConfirmButton:false, timer:2000});
+                        return;
+                    }
+                    if(el.type !== 'hidden' && !el.checkValidity()) { 
+                        el.reportValidity(); return; 
+                    } 
+                }
+
+                let targetPageIndex = state.publicCurrentPage + 1; 
+                let forceSubmit = false;
+                
+                const currentSection = state.publicPages[state.publicCurrentPage].sectionField;
+                if (currentSection && currentSection.nextAction) {
+                    if (currentSection.nextAction === 'submit') { forceSubmit = true; } 
+                    else if (currentSection.nextAction !== 'next') {
+                        let globalTargetIndex = parseInt(currentSection.nextAction);
+                        let targetPage = -1; let sectionCounter = 0;
+                        for(let i=0; i<state.publicFormSchema.fields.length; i++) {
+                            if(state.publicFormSchema.fields[i].type === 'section') { sectionCounter++; if(i === globalTargetIndex) { targetPage = sectionCounter; break; } }
+                        }
+                        if(targetPage !== -1) targetPageIndex = targetPage;
+                    }
+                }
+
+                const pageFields = state.publicPages[state.publicCurrentPage].fields;
+                for (let f of pageFields) {
+                    if (f.logicEnabled && (f.type === 'radio' || f.type === 'dropdown')) {
+                        let selectedValue = null;
+                        if (f.type === 'radio') { const checked = currentContainer.querySelector(`input[name="${f.label}"]:checked`); if (checked) selectedValue = checked.value; } 
+                        else { const sel = currentContainer.querySelector(`select[name="${f.label}"]`); if (sel) selectedValue = sel.value; }
+                        
+                        if (selectedValue) {
+                            const optionDef = f.options.find(o => (o.label || o) === selectedValue);
+                            if (optionDef && optionDef.goTo) {
+                                if (optionDef.goTo === 'submit') { forceSubmit = true; break; } 
+                                else if (optionDef.goTo !== 'next') {
+                                    let globalTargetIndex = parseInt(optionDef.goTo);
+                                    let targetPage = -1; let sectionCounter = 0;
+                                    for(let i=0; i<state.publicFormSchema.fields.length; i++) {
+                                        if(state.publicFormSchema.fields[i].type === 'section') { sectionCounter++; if(i === globalTargetIndex) { targetPage = sectionCounter; break; } }
+                                    }
+                                    if(targetPage !== -1) targetPageIndex = targetPage;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (forceSubmit) { submitPublicForm(new Event('submit', { cancelable: true })); return; }
+                state.publicCurrentPage = targetPageIndex; state.publicPageHistory.push(targetPageIndex);
+            } else {
+                state.publicPageHistory.pop(); state.publicCurrentPage = state.publicPageHistory[state.publicPageHistory.length - 1] || 0;
+            }
+
+            requestAnimationFrame(() => { updatePageVisibility(); window.scrollTo({ top: 0, behavior: 'instant' }); });
+        }
+
+        function updatePageVisibility() {
+            const pagesCount = state.publicPages.length;
+            for(let i=0; i<pagesCount; i++) {
+                const el = document.getElementById(`page-dom-${i}`);
+                if(el) el.style.display = (i === state.publicCurrentPage) ? 'block' : 'none';
+            }
+
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            const btnSubmit = document.getElementById('btn-submit-form');
+
+            if(state.publicPageHistory.length <= 1) btnPrev.classList.add('hidden'); else btnPrev.classList.remove('hidden');
+
+            let isSubmitAction = false;
+            if(state.publicCurrentPage >= pagesCount - 1) {
+                isSubmitAction = true;
+            } else {
+                const currentSection = state.publicPages[state.publicCurrentPage].sectionField;
+                if(currentSection && currentSection.nextAction === 'submit') {
+                    isSubmitAction = true;
+                }
+            }
+
+            if(isSubmitAction) { 
+                btnNext.classList.add('hidden'); 
+                btnSubmit.classList.remove('hidden'); 
+            } else { 
+                btnNext.classList.remove('hidden'); 
+                btnSubmit.classList.add('hidden'); 
+            }
+        }
+
+        async function submitPublicForm(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            
+            const confirmAction = await Swal.fire({ title: 'Yakin mengumpulkan jawaban?', text: "Pastikan data yang Anda isi sudah benar.", icon: 'question', showCancelButton: true, confirmButtonColor: '#16a34a', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color:#475569">Batal</span>', confirmButtonText: 'Kumpulkan' });
+            if (!confirmAction.isConfirmed) return;
+
+            const formEl = document.getElementById('public-submit-form');
+            const btn = document.getElementById('btn-submit-form');
+            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim...'; btn.disabled = true;
+
+            const formData = new FormData(formEl);
+            const answers = {}; const files = [];
+
+            const isQuiz = state.publicFormSchema.isQuizMode;
+            let quizTotalPoints = 0; 
+            let quizEarnedPoints = 0;
+            let quizReviewDetails = [];
+
+            for (let [key, value] of formData.entries()) {
+                if(value instanceof File && value.size > 0) {
+                    const base64 = await fileToBase64(value);
+                    files.push({ key: key, filename: value.name, mimeType: value.type, data: base64.split(',')[1] });
+                } else if (key.endsWith('[]')) {
+                    const realKey = key.slice(0, -2);
+                    if(!answers[realKey]) answers[realKey] = [];
+                    answers[realKey].push(value);
+                } else {
+                    if(!(value instanceof File)) {
+                        answers[key] = value;
+                    }
+                }
+            }
+
+            // Enhanced Quiz Scoring Logic with Points
+            if (isQuiz) {
+                state.publicFormSchema.fields.forEach(fieldDef => {
+                    if (fieldDef.correctAnswer) {
+                        let pts = parseInt(fieldDef.points) || 10;
+                        quizTotalPoints += pts;
+                        
+                        let userAnswer = answers[fieldDef.label] || '-';
+                        let isCorrect = false;
+
+                        if (Array.isArray(userAnswer)) {
+                            isCorrect = (userAnswer.join(', ') === fieldDef.correctAnswer);
+                        } else {
+                            isCorrect = (userAnswer === fieldDef.correctAnswer);
+                        }
+
+                        if (isCorrect) quizEarnedPoints += pts;
+
+                        quizReviewDetails.push({
+                            question: fieldDef.label,
+                            userAnswer: Array.isArray(userAnswer) ? userAnswer.join(', ') : userAnswer,
+                            correctAnswer: fieldDef.correctAnswer,
+                            isCorrect: isCorrect,
+                            earned: isCorrect ? pts : 0,
+                            max: pts
+                        });
+                    }
+                });
+            }
+
+            let finalScoreHtml = '';
+            if (isQuiz && quizTotalPoints > 0) {
+                answers['Skor Akhir (Auto-Grading)'] = `${quizEarnedPoints} / ${quizTotalPoints}`; 
+                window.currentQuizReviewData = { details: quizReviewDetails };
+                
+                finalScoreHtml = `
+                    <div class="mt-8 mb-4">
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-widest mb-3">Skor Anda</p>
+                        <div class="text-4xl font-black text-edu-blue mb-2">
+                            ${quizEarnedPoints} <span class="text-xl text-gray-400">/ ${quizTotalPoints}</span>
+                        </div>
+                        <button onclick="showQuizReviewModal()" class="mt-3 bg-blue-50 hover:bg-blue-100 text-edu-blue px-4 py-2 rounded-xl text-xs font-bold transition border border-blue-200 shadow-sm"><i class="fa-solid fa-file-contract mr-1"></i> Lihat Hasil Rekap</button>
+                    </div>
+                `;
+            }
+
+            const payload = { formId: state.publicFormSchema.id, slug: state.publicFormSchema.slug, answers: answers, files: files };
+
+            document.getElementById('public-form-container').innerHTML = `
+                <div class="bg-white p-10 md:p-12 rounded-3xl text-center shadow-sm border-t-8 border-t-green-500 max-w-lg mx-auto mt-10 fade-in">
+                    <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl"><i class="fa-solid fa-check"></i></div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Terkirim Sempurna!</h2>
+                    <p class="text-gray-500 text-[13px]">Terima kasih, data Anda telah direkam dengan aman.</p>
+                    ${finalScoreHtml}
+                    <button onclick="location.reload()" class="mt-8 bg-gray-50 hover:bg-gray-100 text-gray-800 px-6 py-2.5 rounded-xl text-[13px] font-bold transition border border-gray-200">Kirim Jawaban Lain</button>
+                </div>`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Berhasil dikirim!', showConfirmButton: false, timer: 3000 });
+
+            // Kirim secara background (non-blocking) agar UI secepat kilat
+            api('submitResponse', payload);
+        }
+
+        window.showQuizReviewModal = function() {
+            const data = window.currentQuizReviewData;
+            if(!data) return;
+
+            let detailsHtml = data.details.map((item, idx) => `
+                <div class="p-4 border ${item.isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'} rounded-xl mb-3 text-left">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-800 text-sm pr-2">${idx+1}. ${item.question}</h4>
+                        <span class="text-[10px] font-extrabold ${item.isCorrect ? 'text-green-600' : 'text-red-600'} bg-white px-2 py-1 rounded-md shadow-sm whitespace-nowrap border border-gray-100">${item.earned} / ${item.max} Poin</span>
+                    </div>
+                    <div class="text-xs mb-1.5"><span class="text-gray-500">Jawaban Anda:</span> <span class="font-medium text-gray-900">${item.userAnswer}</span> ${item.isCorrect ? '<i class="fa-solid fa-check text-green-500 ml-1 text-sm"></i>' : '<i class="fa-solid fa-times text-red-500 ml-1 text-sm"></i>'}</div>
+                    ${!item.isCorrect ? `<div class="text-xs pt-1.5 border-t border-red-200/50"><span class="text-gray-500">Jawaban Benar:</span> <span class="font-bold text-green-700">${item.correctAnswer}</span></div>` : ''}
+                </div>
+            `).join('');
+
+            Swal.fire({
+                title: 'Rekap Hasil Kuis',
+                html: `<div class="max-h-[65vh] overflow-y-auto mt-4 pr-1 text-sm">${detailsHtml}</div>`,
+                width: 600,
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#0044CC',
+                customClass: { htmlContainer: 'text-left' }
+            });
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); });
+        }
+    </script>
+</body>
+</html>
