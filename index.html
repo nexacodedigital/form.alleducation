@@ -74,6 +74,17 @@
         .sidebar-link:hover, .sidebar-link.active { background-color: #F1F5F9; color: #0044CC; font-weight: 700; }
         .sidebar-link.active { border-left: 4px solid #FACC15; }
         
+        /* COLLAPSIBLE SIDEBAR */
+        #admin-sidebar { transition: width 0.2s ease, opacity 0.2s ease; }
+        #admin-sidebar.sidebar-hidden { display: none !important; }
+
+        /* SPREADSHEET TABLE STYLING */
+        .sheet-table th, .sheet-table td { border: 1px solid #e2e8f0; }
+        .sheet-table thead th { background-color: #f1f5f9; color: #334155; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .sheet-table tbody tr:nth-child(even) { background-color: #fafbfc; }
+        .sheet-table tbody tr:hover { background-color: #eff6ff; }
+        .sheet-row-num { background-color: #f8fafc !important; color: #64748b; font-family: monospace; text-align: center; position: sticky; left: 0; z-index: 5; }
+
         .field-card { border-left: 4px solid transparent; transition: all 0.15s; }
         .field-card:focus-within, .field-card:hover { border-left-color: #0044CC; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
         .field-card.dragging { opacity: 0.4; border: 2px dashed #0044CC; }
@@ -92,7 +103,6 @@
 
         .kop-surat-motto { font-style: italic; color: #f97316; font-weight: 600; font-size: 11px; }
         
-        /* BANNER FULL - TANPA POTONGAN */
         .banner-img-container { width: 100%; height: auto; border-radius: 16px 16px 0 0; overflow: hidden; background: #e2e8f0; }
         .banner-img-container img { width: 100%; height: auto; display: block; }
     </style>
@@ -134,10 +144,15 @@
         <div class="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-edu-blue via-edu-dark to-black"></div>
         <div class="bg-white p-10 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md mx-4 relative z-10 fade-in border-t-8 border-t-edu-gold">
             
-            <div class="flex flex-col items-center mb-8">
+            <div class="flex flex-col items-center mb-6">
                 <img src="" id="login-logo" alt="Logo" class="w-20 h-20 mb-4 shadow-md rounded-2xl border border-gray-100 object-contain p-1 bg-white">
                 <h1 class="text-2xl font-extrabold text-gray-900">All Education</h1>
-                <p class="text-xs text-gray-400 uppercase tracking-widest mt-1 text-center font-bold">Internal Form System</p>
+                <p id="login-subtitle" class="text-xs text-gray-400 uppercase tracking-widest mt-1 text-center font-bold">Internal Form System</p>
+            </div>
+
+            <div id="login-confidential-alert" class="hidden mb-6 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-start gap-2.5">
+                <i class="fa-solid fa-lock text-amber-600 mt-0.5"></i>
+                <span>Dashboard ini bersifat <b>Confidential</b>. Silakan login menggunakan akun Admin/Divisi untuk melihat data respons.</span>
             </div>
             
             <form id="login-form" onsubmit="handleLogin(event)">
@@ -165,42 +180,46 @@
 
     <!-- VIEW 3: ADMIN DASHBOARD -->
     <section id="view-admin" class="view-section h-screen w-full flex-col md:flex-row overflow-hidden bg-edu-bg">
-        <aside class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col h-auto md:h-full z-20 md:flex flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            <div class="p-6 border-b border-gray-100 flex items-center justify-between md:justify-start gap-3">
+        <!-- SIDEBAR (COLLAPSIBLE) -->
+        <aside id="admin-sidebar" class="w-full md:w-64 bg-white border-r border-gray-200 flex flex-col h-auto md:h-full z-30 flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <img src="" id="sidebar-logo" alt="Logo" class="w-10 h-10 object-contain rounded-lg shadow-sm bg-white p-0.5">
                     <span class="font-bold text-base text-edu-dark tracking-tight leading-tight">All Edu<br><span class="text-[11px] text-gray-400 font-medium tracking-normal">Form System</span></span>
                 </div>
+                <button onclick="toggleAdminSidebar()" class="w-8 h-8 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-edu-blue flex items-center justify-center transition" title="Sembunyikan Sidebar">
+                    <i class="fa-solid fa-angles-left text-xs"></i>
+                </button>
             </div>
             
-            <div class="flex-1 overflow-y-auto py-6">
+            <div class="flex-1 overflow-y-auto py-5">
                 <div class="px-6 mb-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Workspace</div>
-                <nav class="flex flex-col gap-1 px-3 mb-8">
-                    <a href="#" onclick="navigateAdmin('dashboard')" id="nav-dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                <nav class="flex flex-col gap-1 px-3 mb-7">
+                    <a href="#" onclick="navigateAdmin('dashboard'); return false;" id="nav-dashboard" class="sidebar-link active flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
                         <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
                     </a>
-                    <a href="#" onclick="navigateAdmin('forms')" id="nav-forms" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                    <a href="#" onclick="navigateAdmin('forms'); return false;" id="nav-forms" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
                         <i class="fa-solid fa-file-lines w-5 text-center"></i> Manajemen Form
                     </a>
-                    <a href="#" onclick="navigateAdmin('responses')" id="nav-responses" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
-                        <i class="fa-solid fa-inbox w-5 text-center"></i> Semua Respons
+                    <a href="#" onclick="navigateAdmin('responses'); return false;" id="nav-responses" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <i class="fa-solid fa-table w-5 text-center"></i> Semua Respons
                     </a>
                 </nav>
 
                 <div id="menu-admin-only" class="hidden">
                     <div class="px-6 mb-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Administrator</div>
                     <nav class="flex flex-col gap-1 px-3">
-                        <a href="#" onclick="navigateAdmin('users')" id="nav-users" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <a href="#" onclick="navigateAdmin('users'); return false;" id="nav-users" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
                             <i class="fa-solid fa-users-gear w-5 text-center"></i> Manajemen Pengguna
                         </a>
-                        <a href="#" onclick="navigateAdmin('settings')" id="nav-settings" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
+                        <a href="#" onclick="navigateAdmin('settings'); return false;" id="nav-settings" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-gray-600 font-medium">
                             <i class="fa-solid fa-gear w-5 text-center"></i> Pengaturan Global
                         </a>
                     </nav>
                 </div>
             </div>
             
-            <div class="p-4 border-t border-gray-100 bg-gray-50 hidden md:block mt-auto">
+            <div class="p-4 border-t border-gray-100 bg-gray-50 mt-auto">
                 <div class="flex items-center gap-3 p-2 mb-2">
                     <div class="w-10 h-10 rounded-full bg-edu-blue text-white flex items-center justify-center font-bold shadow-sm text-sm" id="user-avatar">A</div>
                     <div class="flex-1 overflow-hidden">
@@ -213,14 +232,32 @@
                 </button>
             </div>
         </aside>
-        <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 w-full" id="admin-content-area"></div>
+
+        <!-- MAIN WORKSPACE -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative min-w-0">
+            <!-- TOP BAR ADMIN DENGAN TOMBOL TOGGLE SIDEBAR -->
+            <div class="h-14 bg-white border-b border-gray-200 px-4 md:px-6 flex items-center justify-between flex-shrink-0 z-20">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleAdminSidebar()" id="btn-toggle-sidebar" class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-edu-blue border border-gray-200/80 flex items-center justify-center transition" title="Tampilkan / Sembunyikan Sidebar">
+                        <i class="fa-solid fa-bars text-sm"></i>
+                    </button>
+                    <span id="admin-topbar-title" class="font-extrabold text-sm md:text-base text-edu-navy tracking-tight">Dashboard</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="topbar-user-badge" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-50 border border-gray-200/80 px-3 py-1.5 rounded-full">
+                        <i class="fa-solid fa-user-shield text-edu-blue text-[11px]"></i>
+                        <span id="topbar-user-email">admin@...</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 w-full" id="admin-content-area"></div>
         </main>
     </section>
 
-    <!-- VIEW 4: PUBLIC RESPONSES (SHARE LINK) -->
+    <!-- VIEW 4: CONFIDENTIAL LIVE RESPONSES (WAJIB LOGIN) -->
     <section id="view-public-responses" class="view-section bg-edu-bg relative min-h-screen">
-        <div id="public-responses-content" class="max-w-6xl mx-auto py-8 md:py-12 px-4 flex flex-col h-screen fade-in">
+        <div id="public-responses-content" class="max-w-7xl mx-auto py-6 md:py-10 px-4 flex flex-col h-screen fade-in">
         </div>
     </section>
 
@@ -230,12 +267,20 @@
             currentView: 'dashboard', forms: [], users: [],
             currentBuilderForm: null, publicFormSchema: null,
             publicPages: [], publicCurrentPage: 0, publicPageHistory: [],
-            settings: {}
+            settings: {},
+            pendingResponseSlug: null,
+            sidebarHidden: false
         };
         
         let globalPublicResponses = [];
         let globalPublicHeaders = [];
         let globalPublicFormTitle = '';
+
+        // State untuk Spreadsheet Semua Respons
+        let spreadsheetAllRows = [];
+        let spreadsheetFilteredRows = [];
+        let spreadsheetHeaders = [];
+        let spreadsheetSelectedFormId = 'ALL';
 
         const PRELOADER_HTML = `
             <div class="max-w-6xl mx-auto space-y-6">
@@ -258,6 +303,17 @@
                 } catch (err) {
                     return { success: false, message: "Gagal terhubung ke Database: " + err.message };
                 }
+            }
+        }
+
+        function toggleAdminSidebar() {
+            const sidebar = document.getElementById('admin-sidebar');
+            if (!sidebar) return;
+            state.sidebarHidden = !state.sidebarHidden;
+            if (state.sidebarHidden) {
+                sidebar.classList.add('sidebar-hidden');
+            } else {
+                sidebar.classList.remove('sidebar-hidden');
             }
         }
 
@@ -291,8 +347,22 @@
                 switchMainView('public-form');
                 loadPublicForm(formSlug);
             } else if (responseSlug) {
-                switchMainView('public-responses');
-                loadPublicResponses(responseSlug);
+                // CONFIDENTIAL LOCK: WAJIB LOGIN UNTUK LIHAT SHARE LIVE DASHBOARD
+                const token = localStorage.getItem('edu_session_token');
+                const role = localStorage.getItem('edu_session_role');
+                const email = localStorage.getItem('edu_session_email');
+                if (token && role && email) {
+                    state.isLoggedIn = true; state.token = token; state.userRole = role; state.userEmail = email;
+                    switchMainView('public-responses');
+                    loadPublicResponses(responseSlug);
+                } else {
+                    state.pendingResponseSlug = responseSlug;
+                    const alertBox = document.getElementById('login-confidential-alert');
+                    const sub = document.getElementById('login-subtitle');
+                    if (alertBox) alertBox.classList.remove('hidden');
+                    if (sub) sub.innerText = 'Confidential Dashboard Access';
+                    switchMainView('login');
+                }
             } else {
                 checkSession();
             }
@@ -310,9 +380,19 @@
             
             if (token && role && email) {
                 state.isLoggedIn = true; state.token = token; state.userRole = role; state.userEmail = email;
+
+                // Jika login dipicu dari link ?r=slug (Confidential Live Dashboard)
+                if (state.pendingResponseSlug) {
+                    const slugToOpen = state.pendingResponseSlug;
+                    state.pendingResponseSlug = null;
+                    switchMainView('public-responses');
+                    loadPublicResponses(slugToOpen);
+                    return;
+                }
                 
                 document.getElementById('user-role-label').innerText = role === 'admin' ? 'Administrator' : 'Divisi';
                 document.getElementById('user-email-label').innerText = email;
+                document.getElementById('topbar-user-email').innerText = email;
                 document.getElementById('user-avatar').innerText = email.charAt(0).toUpperCase();
                 
                 if(role === 'admin') document.getElementById('menu-admin-only').classList.remove('hidden');
@@ -376,6 +456,18 @@
             document.querySelectorAll('.sidebar-link').forEach(el => el.classList.remove('active'));
             if(document.getElementById(`nav-${page}`)) document.getElementById(`nav-${page}`).classList.add('active');
 
+            const titles = {
+                'dashboard': 'Dashboard',
+                'forms': 'Manajemen Form',
+                'responses': 'Semua Respons (Spreadsheet)',
+                'users': 'Manajemen Pengguna',
+                'settings': 'Pengaturan Global',
+                'builder': 'Form Builder',
+                'view-responses': 'Detail Respons Form'
+            };
+            const topTitle = document.getElementById('admin-topbar-title');
+            if (topTitle) topTitle.innerText = titles[page] || 'Admin';
+
             const contentArea = document.getElementById('admin-content-area');
             
             if(page === 'builder') { renderFormBuilder(contentArea, additionalData); return; }
@@ -388,7 +480,7 @@
                 void contentArea.offsetWidth;
                 if(page === 'dashboard') renderDashboard(contentArea);
                 if(page === 'forms') renderFormsManagement(contentArea);
-                if(page === 'responses') renderResponsesIndex(contentArea);
+                if(page === 'responses') renderResponsesSpreadsheet(contentArea);
                 contentPreloaded = true;
             } else {
                 contentArea.innerHTML = PRELOADER_HTML;
@@ -402,7 +494,7 @@
                         void contentArea.offsetWidth;
                         if(page === 'dashboard') renderDashboard(contentArea);
                         if(page === 'forms') renderFormsManagement(contentArea);
-                        if(page === 'responses') renderResponsesIndex(contentArea);
+                        if(page === 'responses') renderResponsesSpreadsheet(contentArea);
                     }
                 }
             });
@@ -423,7 +515,7 @@
                             <div class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total Form</div>
                             <div class="text-3xl font-extrabold text-edu-blue">${totalForms}</div>
                         </div>
-                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-1">
+                        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-1 cursor-pointer hover:border-green-300 transition" onclick="navigateAdmin('responses')">
                             <div class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total Respons</div>
                             <div class="text-3xl font-extrabold text-green-600">${totalResponses}</div>
                         </div>
@@ -437,7 +529,7 @@
                     </div>
 
                     <h2 class="text-sm font-bold text-gray-800 mb-4 uppercase tracking-widest">Aktivitas Terbaru</h2>
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-auto">
                         <table class="w-full text-left border-collapse min-w-[600px]">
                             <thead>
                                 <tr class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider border-b border-gray-100">
@@ -448,7 +540,7 @@
                             </thead>
                             <tbody class="text-sm divide-y divide-gray-100">
                                 ${state.forms.length > 0 ? state.forms.slice(0,5).map(f => `
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr class="hover:bg-gray-50 transition-colors cursor-pointer" onclick="navigateAdmin('view-responses', '${f.id}')">
                                         <td class="p-4 font-bold text-gray-800">${f.title}</td>
                                         <td class="p-4"><span class="px-2 py-1 rounded-md text-[10px] font-bold ${f.status === 'Aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}">${f.status}</span></td>
                                         <td class="p-4 text-gray-600 text-center font-bold">${f.responsesCount || 0}</td>
@@ -498,11 +590,301 @@
             `;
         }
 
-        function renderResponsesIndex(container) { navigateAdmin('forms'); }
+        // =========================================================================
+        // FITUR BARU: MENU SEMUA RESPONS (MODE SPREADSHEET + FILTER + EXPORT + HAPUS)
+        // =========================================================================
+        async function renderResponsesSpreadsheet(container) {
+            container.innerHTML = `
+                <div class="fade-in bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[calc(100vh-105px)] overflow-hidden">
+                    <!-- SPREADSHEET TOOLBAR -->
+                    <div class="p-4 border-b border-gray-200 bg-slate-50 flex flex-col gap-3 flex-shrink-0">
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-9 h-9 rounded-xl bg-green-600 text-white flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-table-cells text-sm"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-base font-extrabold text-edu-navy leading-tight">Spreadsheet Semua Respons</h2>
+                                    <p id="sheet-row-counter" class="text-[11px] text-gray-500 font-medium">Memuat data respons...</p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                                <button onclick="loadSpreadsheetData(true)" class="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition">
+                                    <i class="fa-solid fa-rotate"></i> Refresh
+                                </button>
+                                <button onclick="exportSpreadsheetToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shadow-sm">
+                                    <i class="fa-solid fa-file-excel"></i> Export Excel (.xlsx)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- BARIS FILTER -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 pt-2 border-t border-gray-200/70">
+                            <div class="md:col-span-4">
+                                <select id="sheet-form-filter" onchange="onSpreadsheetFormChange(this.value)" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs font-bold text-edu-navy focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue">
+                                    <option value="ALL" ${spreadsheetSelectedFormId === 'ALL' ? 'selected' : ''}>📊 Semua Form (${state.forms.length} Form)</option>
+                                    ${state.forms.map(f => `<option value="${f.id}" ${spreadsheetSelectedFormId === f.id ? 'selected' : ''}>📄 ${f.title} (${f.responsesCount || 0} respons)</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="md:col-span-4 relative">
+                                <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                                <input type="text" id="sheet-search" onkeyup="applySpreadsheetFilters()" placeholder="Cari isi jawaban, nama, email..." class="w-full pl-8 pr-3 py-2 bg-white border border-gray-300 rounded-xl text-xs font-medium text-gray-700 focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue">
+                            </div>
+                            <div class="md:col-span-4 flex items-center gap-1.5">
+                                <input type="date" id="sheet-date-start" onchange="applySpreadsheetFilters()" class="flex-1 px-2.5 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-600 font-medium focus:outline-none focus:border-edu-blue" title="Dari Tanggal">
+                                <span class="text-gray-400 text-xs font-bold">-</span>
+                                <input type="date" id="sheet-date-end" onchange="applySpreadsheetFilters()" class="flex-1 px-2.5 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-600 font-medium focus:outline-none focus:border-edu-blue" title="Sampai Tanggal">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SPREADSHEET GRID AREA -->
+                    <div class="flex-1 overflow-auto bg-white relative" id="sheet-table-wrapper">
+                        <div class="p-12 text-center text-gray-400 text-sm font-bold">
+                            <i class="fa-solid fa-circle-notch fa-spin text-edu-blue text-xl mb-2 block"></i>
+                            Mengambil seluruh data respons...
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            loadSpreadsheetData(false);
+        }
+
+        async function onSpreadsheetFormChange(formId) {
+            spreadsheetSelectedFormId = formId;
+            await loadSpreadsheetData(false);
+        }
+
+        async function loadSpreadsheetData(forceRefresh = false) {
+            const wrapper = document.getElementById('sheet-table-wrapper');
+            const counterEl = document.getElementById('sheet-row-counter');
+            if (!wrapper) return;
+
+            if (state.forms.length === 0) {
+                wrapper.innerHTML = `<div class="p-12 text-center text-gray-400 text-sm font-bold">Belum ada form yang tersedia.</div>`;
+                if (counterEl) counterEl.innerText = '0 baris data';
+                return;
+            }
+
+            wrapper.innerHTML = `<div class="p-12 text-center text-gray-400 text-sm font-bold"><i class="fa-solid fa-circle-notch fa-spin text-edu-blue text-xl mb-2 block"></i> Memuat data spreadsheet...</div>`;
+
+            const targetForms = spreadsheetSelectedFormId === 'ALL'
+                ? state.forms
+                : state.forms.filter(f => f.id === spreadsheetSelectedFormId);
+
+            try {
+                const results = await Promise.all(
+                    targetForms.map(async (f) => {
+                        const res = await api('getResponses', { formId: f.id, userEmail: state.userEmail, userRole: state.userRole });
+                        const list = (res.success && Array.isArray(res.responses)) ? res.responses : [];
+                        return list.map((r, idx) => ({
+                            ...r,
+                            _formId: f.id,
+                            _formTitle: f.title,
+                            _responseId: r.id || r.rowId || r.rowIndex || (f.id + '_' + r.date + '_' + idx)
+                        }));
+                    })
+                );
+
+                spreadsheetAllRows = results.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                // Bangun kolom header dinamis
+                let headers = [];
+                if (spreadsheetSelectedFormId === 'ALL') {
+                    headers.push('Nama Form');
+                }
+                headers.push('Tanggal');
+
+                if (spreadsheetAllRows.length > 0) {
+                    spreadsheetAllRows.forEach(r => {
+                        if (r.data && typeof r.data === 'object') {
+                            Object.keys(r.data).forEach(k => {
+                                if (!headers.includes(k)) headers.push(k);
+                            });
+                        }
+                    });
+                } else if (targetForms.length === 1) {
+                    let schemaFields = typeof targetForms[0].fields === 'string' ? JSON.parse(targetForms[0].fields || '[]') : (targetForms[0].fields || []);
+                    schemaFields.forEach(f => { if (f.type !== 'section' && !headers.includes(f.label)) headers.push(f.label); });
+                }
+
+                spreadsheetHeaders = headers;
+                applySpreadsheetFilters();
+            } catch (err) {
+                wrapper.innerHTML = `<div class="p-10 text-center text-red-500 font-bold text-sm">Gagal memuat data: ${err.message}</div>`;
+            }
+        }
+
+        function applySpreadsheetFilters() {
+            const searchEl = document.getElementById('sheet-search');
+            const startEl = document.getElementById('sheet-date-start');
+            const endEl = document.getElementById('sheet-date-end');
+            const search = searchEl ? searchEl.value.toLowerCase().trim() : '';
+            const dateStart = startEl ? startEl.value : '';
+            const dateEnd = endEl ? endEl.value : '';
+
+            spreadsheetFilteredRows = spreadsheetAllRows.filter(r => {
+                let matchSearch = true;
+                if (search) {
+                    matchSearch = false;
+                    if (String(r._formTitle || '').toLowerCase().includes(search)) matchSearch = true;
+                    if (!matchSearch && new Date(r.date).toLocaleString('id-ID').toLowerCase().includes(search)) matchSearch = true;
+                    if (!matchSearch && r.data && typeof r.data === 'object') {
+                        for (let val of Object.values(r.data)) {
+                            if (String(val || '').toLowerCase().includes(search)) { matchSearch = true; break; }
+                        }
+                    }
+                }
+
+                let matchDate = true;
+                if (dateStart || dateEnd) {
+                    let rDate = new Date(r.date);
+                    rDate.setHours(0, 0, 0, 0);
+                    if (dateStart) {
+                        let sDate = new Date(dateStart); sDate.setHours(0, 0, 0, 0);
+                        if (rDate < sDate) matchDate = false;
+                    }
+                    if (dateEnd) {
+                        let eDate = new Date(dateEnd); eDate.setHours(23, 59, 59, 999);
+                        if (rDate > eDate) matchDate = false;
+                    }
+                }
+
+                return matchSearch && matchDate;
+            });
+
+            renderSpreadsheetTableDOM();
+        }
+
+        function renderSpreadsheetTableDOM() {
+            const wrapper = document.getElementById('sheet-table-wrapper');
+            const counterEl = document.getElementById('sheet-row-counter');
+            if (!wrapper) return;
+
+            if (counterEl) {
+                counterEl.innerText = `Menampilkan ${spreadsheetFilteredRows.length} dari ${spreadsheetAllRows.length} baris data`;
+            }
+
+            if (spreadsheetFilteredRows.length === 0) {
+                wrapper.innerHTML = `<div class="p-14 text-center text-gray-400 font-bold text-sm">Tidak ada data respons yang cocok.</div>`;
+                return;
+            }
+
+            const headCells = spreadsheetHeaders.map(h => `<th class="px-3.5 py-2.5 whitespace-nowrap text-left">${h}</th>`).join('');
+            const bodyRows = spreadsheetFilteredRows.map((r, idx) => {
+                const cells = spreadsheetHeaders.map(h => {
+                    if (h === 'Nama Form') {
+                        return `<td class="px-3.5 py-2 whitespace-nowrap text-xs font-bold text-edu-navy"><span class="bg-blue-50 text-edu-blue px-2 py-0.5 rounded-md border border-blue-100">${r._formTitle}</span></td>`;
+                    }
+                    if (h === 'Tanggal') {
+                        return `<td class="px-3.5 py-2 whitespace-nowrap text-xs text-gray-600 font-mono">${new Date(r.date).toLocaleString('id-ID')}</td>`;
+                    }
+                    const rawVal = r.data ? r.data[h] : '';
+                    return `<td class="px-3.5 py-2 text-xs text-gray-800 max-w-[260px] truncate" title="${String(rawVal || '-').replace(/"/g, '&quot;')}">${renderAnswerCell(rawVal)}</td>`;
+                }).join('');
+
+                return `
+                    <tr>
+                        <td class="sheet-row-num px-2 py-2 text-xs font-bold">${idx + 1}</td>
+                        ${cells}
+                        <td class="px-3 py-1.5 text-center whitespace-nowrap">
+                            <button onclick="deleteResponseItem('${r._formId}', '${encodeURIComponent(r._responseId)}', '${encodeURIComponent(r.date)}', 'spreadsheet')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg text-[11px] font-bold transition" title="Hapus Data Respons">
+                                <i class="fa-solid fa-trash-can"></i> Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            wrapper.innerHTML = `
+                <table class="sheet-table w-full text-left border-collapse min-w-max">
+                    <thead class="sticky top-0 z-10 shadow-xs">
+                        <tr>
+                            <th class="px-2 py-2.5 text-center w-12 sticky left-0 z-20 bg-slate-200/80">#</th>
+                            ${headCells}
+                            <th class="px-3 py-2.5 text-center w-24">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>${bodyRows}</tbody>
+                </table>
+            `;
+        }
+
+        function exportSpreadsheetToExcel() {
+            if (spreadsheetFilteredRows.length === 0) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Tidak ada data untuk di-export', showConfirmButton: false, timer: 2000 });
+                return;
+            }
+
+            const exportData = spreadsheetFilteredRows.map((r, idx) => {
+                const rowObj = { 'No': idx + 1 };
+                spreadsheetHeaders.forEach(h => {
+                    if (h === 'Nama Form') rowObj[h] = r._formTitle;
+                    else if (h === 'Tanggal') rowObj[h] = new Date(r.date).toLocaleString('id-ID');
+                    else {
+                        const val = r.data ? r.data[h] : '';
+                        rowObj[h] = Array.isArray(val) ? val.join(', ') : (val || '-');
+                    }
+                });
+                return rowObj;
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Respons");
+
+            const selectedForm = state.forms.find(f => f.id === spreadsheetSelectedFormId);
+            const fileName = selectedForm ? `Respons_${selectedForm.title}.xlsx` : `Semua_Respons_AllEducation.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        }
+
+        async function deleteResponseItem(formId, encodedResId, encodedDate, sourceView = 'spreadsheet') {
+            const responseId = decodeURIComponent(encodedResId);
+            const dateStr = decodeURIComponent(encodedDate);
+
+            const confirm = await Swal.fire({
+                title: 'Hapus Data Respons?',
+                text: 'Data jawaban ini akan dihapus permanen dari database.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#e2e8f0',
+                cancelButtonText: '<span style="color:#475569">Batal</span>',
+                confirmButtonText: 'Ya, Hapus'
+            });
+            if (!confirm.isConfirmed) return;
+
+            Swal.fire({ title: 'Menghapus...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await api('deleteResponse', {
+                formId: formId,
+                responseId: responseId,
+                date: dateStr,
+                userEmail: state.userEmail,
+                userRole: state.userRole
+            });
+
+            if (res.success) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Respons berhasil dihapus', showConfirmButton: false, timer: 1800 });
+                // Update counter lokal
+                const targetForm = state.forms.find(f => f.id === formId);
+                if (targetForm && targetForm.responsesCount > 0) targetForm.responsesCount--;
+
+                if (sourceView === 'spreadsheet') {
+                    spreadsheetAllRows = spreadsheetAllRows.filter(r => !(r._formId === formId && String(r.date) === String(dateStr)));
+                    applySpreadsheetFilters();
+                } else {
+                    renderResponseTable(document.getElementById('admin-content-area'), formId);
+                }
+            } else {
+                Swal.fire('Gagal Menghapus', res.message || 'Pastikan action "deleteResponse" sudah ditambahkan di Google Apps Script (Code.gs).', 'error');
+            }
+        }
 
         function copyFormLink(slug) {
             const url = window.location.origin + window.location.pathname + '?f=' + slug;
-            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Tersalin', showConfirmButton: false, timer: 1500 }));
+            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Link Form Tersalin', showConfirmButton: false, timer: 1500 }));
         }
 
         function showQRCode(slug) {
@@ -532,7 +914,7 @@
 
         function copyPublicResponseLink(slug) {
             const url = window.location.origin + window.location.pathname + '?r=' + slug;
-            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Link Dashboard Publik Tersalin', showConfirmButton: false, timer: 1500 }));
+            navigator.clipboard.writeText(url).then(() => Swal.fire({ toast: true, position: 'bottom-end', icon: 'success', title: 'Link Live Dashboard (Wajib Login) Tersalin', showConfirmButton: false, timer: 1800 }));
         }
 
         function editForm(id) { const form = state.forms.find(f => f.id === id); if(form) navigateAdmin('builder', form); }
@@ -629,7 +1011,7 @@
                         </div>
 
                         <div class="mt-6 pt-6 border-t border-gray-100">
-                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Link Custom Banner (Kosongkan jika ingin auto Kop Surat)</label>
+                            <label class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Link Custom Banner (Kosongkan jika ingin auto Kop Surat Premium)</label>
                             <input type="text" id="b-banner" class="w-full text-sm bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-edu-blue transition" value="${bannerLink}" placeholder="https://link-gambar.com/banner.jpg" onchange="updateFormHeader()">
                             <p class="text-[10px] text-gray-500 mt-1 font-medium">*Rekomendasi: Lebar penuh, bentuk persegi panjang (Rasio 4:1 atau 1600x400 px).</p>
                             
@@ -639,16 +1021,14 @@
                                 <div class="banner-img-container" style="aspect-ratio: 4/1; overflow:hidden;"><img src="${bannerLink}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/1600x400/081D42/FFFFFF?text=Banner+Error'"></div>
                             </div>
                             ` : `
-                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm opacity-90">
-                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview (Auto Kop Surat Corporate)</div>
-                                <div class="h-1.5 w-full corporate-accent-line"></div>
-                                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b border-gray-100">
-                                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-2xl p-2 flex items-center justify-center"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
+                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview (Auto Kop Surat Corporate Premium)</div>
+                                <div class="relative overflow-hidden bg-gradient-to-br from-[#061638] via-[#0B2861] to-[#123E91] px-5 py-5 border-b-[3px] border-edu-orange flex items-center gap-4">
+                                    <div class="w-14 h-14 flex-shrink-0 bg-white rounded-2xl p-1.5 shadow-md ring-4 ring-white/10 flex items-center justify-center"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
                                     <div class="flex-1">
-                                        <h1 class="text-edu-navy font-extrabold text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
-                                        <p class="text-gray-500 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
-                                        <p class="text-gray-700 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
-                                        <p class="kop-surat-motto text-[10px] md:text-[11px]">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
+                                        <h1 class="text-white font-extrabold text-sm md:text-base uppercase tracking-wider mb-0.5">ALL EDUCATION INDONESIA</h1>
+                                        <p class="text-blue-100/80 text-[10px] md:text-[11px] leading-snug mb-1">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
+                                        <p class="italic text-amber-300/95 text-[10px] md:text-[11px] font-medium">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
                                     </div>
                                 </div>
                             </div>`}
@@ -1012,6 +1392,7 @@
         }
 
         let currentFormResponses = []; 
+        let currentFormHeaders = [];
 
         async function renderResponseTable(container, formId) {
             const form = state.forms.find(f => f.id === formId);
@@ -1032,36 +1413,47 @@
                 let schemaFields = typeof form.fields === 'string' ? JSON.parse(form.fields || '[]') : form.fields;
                 schemaFields.forEach(f => { if(f.type !== 'section') headers.push(f.label); });
             }
+            currentFormHeaders = headers;
 
             container.innerHTML = `
-                <div class="fade-in bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full max-h-[85vh]">
-                    <div class="p-5 md:p-6 border-b border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center bg-gray-50 gap-4 z-20">
+                <div class="fade-in bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-105px)]">
+                    <div class="p-4 md:p-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center bg-slate-50 gap-4 z-20">
                         <div>
-                            <button onclick="navigateAdmin('responses')" class="text-gray-500 hover:text-edu-blue font-bold text-xs mb-2 flex items-center gap-1.5 transition"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
-                            <h2 class="text-xl font-extrabold text-gray-900 uppercase tracking-tight">${form.title}</h2>
+                            <button onclick="navigateAdmin('forms')" class="text-gray-500 hover:text-edu-blue font-bold text-xs mb-1.5 flex items-center gap-1.5 transition"><i class="fa-solid fa-arrow-left"></i> Kembali ke Manajemen Form</button>
+                            <h2 class="text-lg font-extrabold text-edu-navy uppercase tracking-tight">${form.title}</h2>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap">
-                            <button onclick="copyPublicResponseLink('${form.slug}')" class="bg-blue-50 hover:bg-blue-100 text-edu-blue px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-sm border border-blue-200"><i class="fa-solid fa-share-nodes"></i> Share Live Dashboard</button>
-                            <div class="bg-gray-200/60 p-1 rounded-xl flex gap-1 mx-2">
-                                <button onclick="toggleResponseView('table')" id="btn-view-table" class="px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
-                                <button onclick="toggleResponseView('dashboard')" id="btn-view-dashboard" class="px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition">Dashboard Analitik</button>
+                            <button onclick="copyPublicResponseLink('${form.slug}')" class="bg-blue-50 hover:bg-blue-100 text-edu-blue px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shadow-sm border border-blue-200"><i class="fa-solid fa-lock"></i> Share Live Dashboard</button>
+                            <div class="bg-gray-200/60 p-1 rounded-xl flex gap-1">
+                                <button onclick="toggleResponseView('table')" id="btn-view-table" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
+                                <button onclick="toggleResponseView('dashboard')" id="btn-view-dashboard" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition">Dashboard Analitik</button>
                             </div>
-                            <button onclick="exportToExcel('${form.title}')" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition shadow-sm"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                            <button onclick="exportSingleFormExcel('${form.title}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition shadow-sm"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
                         </div>
                     </div>
                     
                     <div id="view-layer-table" class="flex-1 flex flex-col min-h-0">
                         <div class="flex-1 overflow-auto">
-                            <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]" id="response-table">
-                                <thead class="sticky top-0 bg-white shadow-sm z-10"><tr class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest bg-gray-100">
-                                    ${headers.map(h => `<th class="p-4 border-b border-gray-200">${h}</th>`).join('')}
-                                </tr></thead>
-                                <tbody class="text-sm divide-y divide-gray-100">
-                                    ${responses.length > 0 ? responses.map(r => `
-                                        <tr class="hover:bg-blue-50 transition">
-                                            <td class="p-4 text-gray-500 font-medium text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
-                                            ${headers.slice(1).map(h => `<td class="p-4 text-gray-800 text-sm max-w-[200px] truncate" title="${r.data[h]||'-'}">${renderAnswerCell(r.data[h])}</td>`).join('')}
-                                        </tr>`).join('') : `<tr><td colspan="${headers.length}" class="p-12 text-center text-gray-400 font-bold text-sm">Belum ada respons.</td></tr>`}
+                            <table class="sheet-table w-full text-left border-collapse whitespace-nowrap min-w-max" id="response-table">
+                                <thead class="sticky top-0 z-10 shadow-xs">
+                                    <tr>
+                                        <th class="px-2 py-2.5 text-center w-12 sticky left-0 z-20 bg-slate-200/80">#</th>
+                                        ${headers.map(h => `<th class="px-3.5 py-2.5">${h}</th>`).join('')}
+                                        <th class="px-3 py-2.5 text-center w-24">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${responses.length > 0 ? responses.map((r, idx) => `
+                                        <tr>
+                                            <td class="sheet-row-num px-2 py-2 text-xs font-bold">${idx + 1}</td>
+                                            <td class="px-3.5 py-2 text-gray-600 font-mono text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
+                                            ${headers.slice(1).map(h => `<td class="px-3.5 py-2 text-gray-800 text-xs max-w-[240px] truncate" title="${String(r.data[h]||'-').replace(/"/g, '&quot;')}">${renderAnswerCell(r.data[h])}</td>`).join('')}
+                                            <td class="px-3 py-1.5 text-center">
+                                                <button onclick="deleteResponseItem('${form.id}', '${encodeURIComponent(r.id || r.date)}', '${encodeURIComponent(r.date)}', 'single')" class="text-red-500 hover:text-white hover:bg-red-500 bg-red-50 border border-red-200 px-2.5 py-1 rounded-lg text-[11px] font-bold transition">
+                                                    <i class="fa-solid fa-trash-can"></i> Hapus
+                                                </button>
+                                            </td>
+                                        </tr>`).join('') : `<tr><td colspan="${headers.length + 2}" class="p-12 text-center text-gray-400 font-bold text-sm">Belum ada respons.</td></tr>`}
                                 </tbody>
                             </table>
                         </div>
@@ -1075,14 +1467,33 @@
             setTimeout(() => { generateDashboardCharts(form); }, 100);
         }
 
+        function exportSingleFormExcel(title) {
+            if (currentFormResponses.length === 0) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Belum ada data', showConfirmButton: false, timer: 1800 });
+                return;
+            }
+            const rows = currentFormResponses.map((r, idx) => {
+                const obj = { 'No': idx + 1, 'Tanggal': new Date(r.date).toLocaleString('id-ID') };
+                currentFormHeaders.slice(1).forEach(h => {
+                    const val = r.data ? r.data[h] : '';
+                    obj[h] = Array.isArray(val) ? val.join(', ') : (val || '-');
+                });
+                return obj;
+            });
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Responses");
+            XLSX.writeFile(wb, `${title}.xlsx`);
+        }
+
         function toggleResponseView(type) {
             document.getElementById('view-layer-table').classList.add('hidden');
             document.getElementById('view-layer-dashboard').classList.add('hidden');
-            document.getElementById('btn-view-table').className = 'px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
-            document.getElementById('btn-view-dashboard').className = 'px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-view-table').className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-view-dashboard').className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
             
             document.getElementById(`view-layer-${type}`).classList.remove('hidden');
-            document.getElementById(`btn-view-${type}`).className = 'px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition';
+            document.getElementById(`btn-view-${type}`).className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition';
         }
 
         function generateSpecificDashboardCharts(fields, responses, containerId) {
@@ -1144,23 +1555,18 @@
         function renderAnswerCell(val) {
             if(!val) return '-';
             if(typeof val === 'string' && (val.includes('drive.google.com') || val.startsWith('http'))) {
-                return `<a href="${val}" target="_blank" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-blue-100 transition whitespace-nowrap inline-flex items-center shadow-sm border border-blue-100"><i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Buka File</a>`;
+                return `<a href="${val}" target="_blank" class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-lg font-bold text-[11px] hover:bg-blue-100 transition whitespace-nowrap inline-flex items-center border border-blue-100"><i class="fa-solid fa-cloud-arrow-down mr-1.5"></i> Buka File</a>`;
             }
             if(Array.isArray(val)) return val.join(', '); 
             return val;
         }
 
-        function exportToExcel(title) {
-            const table = document.getElementById("response-table");
-            const wb = XLSX.utils.table_to_book(table, {sheet: "Responses"});
-            XLSX.writeFile(wb, `${title}.xlsx`);
-        }
-
+        // CONFIDENTIAL LIVE RESPONSES (SUDAH TERKUNCI LOGIN)
         async function loadPublicResponses(slug) {
             const container = document.getElementById('public-responses-content');
             container.innerHTML = PRELOADER_HTML; 
 
-            const res = await api('getPublicResponses', { slug: slug });
+            const res = await api('getPublicResponses', { slug: slug, userEmail: state.userEmail, userRole: state.userRole });
             if(!res.success) {
                 container.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center shadow-sm border-t-8 border-t-red-500 max-w-md mx-auto mt-20"><h2 class="text-xl font-extrabold text-gray-900 mb-2">Akses Ditolak</h2><p class="text-gray-500 text-sm font-medium">${res.message}</p></div>`; return;
             }
@@ -1181,49 +1587,52 @@
             globalPublicHeaders = headers;
 
             container.innerHTML = `
-                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
                     <div>
-                        <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tight">${res.formTitle}</h1>
-                        <p class="text-gray-500 text-sm font-medium">Public Live Response Dashboard</p>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-[10px] font-extrabold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><i class="fa-solid fa-lock mr-1"></i> Confidential</span>
+                            <span class="text-xs text-gray-400 font-semibold">${state.userEmail}</span>
+                        </div>
+                        <h1 class="text-xl md:text-2xl font-black text-edu-navy uppercase tracking-tight">${res.formTitle}</h1>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
                         <div class="bg-gray-100 p-1 rounded-xl flex gap-1 flex-1 md:flex-none">
-                            <button onclick="togglePublicResView('table')" id="btn-pub-table" class="flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
-                            <button onclick="togglePublicResView('dashboard')" id="btn-pub-dashboard" class="flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition">Analitik</button>
+                            <button onclick="togglePublicResView('table')" id="btn-pub-table" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition">Tabel Data</button>
+                            <button onclick="togglePublicResView('dashboard')" id="btn-pub-dashboard" class="flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition">Analitik</button>
                         </div>
-                        <button onclick="exportPublicExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition shadow-sm w-full md:w-auto"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                        <button onclick="exportPublicExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition shadow-sm"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                        <button onclick="handleLogout()" class="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"><i class="fa-solid fa-arrow-right-from-bracket"></i> Keluar</button>
                     </div>
                 </div>
 
-                <!-- TABEL DATA PUBLIK -->
-                <div id="pub-layer-table" class="flex-1 flex flex-col min-h-0 bg-white rounded-3xl shadow-sm border border-gray-100 mb-10 overflow-hidden">
-                    
-                    <div class="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-3 bg-gray-50">
+                <!-- TABEL DATA -->
+                <div id="pub-layer-table" class="flex-1 flex flex-col min-h-0 bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+                    <div class="p-3.5 border-b border-gray-200 flex flex-col md:flex-row gap-3 bg-slate-50">
                         <div class="relative flex-1">
-                            <i class="fa-solid fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
-                            <input type="text" id="pub-search" placeholder="Cari (ketik nama, email, jawaban)..." class="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue transition font-medium text-gray-700" onkeyup="filterPublicData()">
+                            <i class="fa-solid fa-search absolute left-3.5 top-2.5 text-gray-400 text-xs"></i>
+                            <input type="text" id="pub-search" placeholder="Cari (ketik nama, email, jawaban)..." class="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue transition font-medium text-gray-700" onkeyup="filterPublicData()">
                         </div>
                         <div class="flex items-center gap-2 w-full md:w-auto">
-                            <input type="date" id="pub-date-start" class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Dari Tanggal">
-                            <span class="text-gray-400 font-bold">-</span>
-                            <input type="date" id="pub-date-end" class="px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-edu-blue focus:ring-1 focus:ring-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Sampai Tanggal">
+                            <input type="date" id="pub-date-start" class="px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Dari Tanggal">
+                            <span class="text-gray-400 font-bold text-xs">-</span>
+                            <input type="date" id="pub-date-end" class="px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-edu-blue text-gray-600 font-medium flex-1 md:flex-none" onchange="filterPublicData()" title="Sampai Tanggal">
                         </div>
                     </div>
                     
                     <div class="flex-1 overflow-auto">
-                        <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]" id="public-response-table">
-                            <thead class="sticky top-0 bg-gray-50 shadow-sm z-10">
-                                <tr class="text-[10px] font-extrabold text-gray-500 uppercase tracking-widest border-b border-gray-100">
-                                    ${headers.map(h => `<th class="p-4 border-b border-gray-200">${h}</th>`).join('')}
+                        <table class="sheet-table w-full text-left border-collapse whitespace-nowrap min-w-max" id="public-response-table">
+                            <thead class="sticky top-0 z-10 shadow-xs">
+                                <tr>
+                                    <th class="px-2 py-2.5 text-center w-12 sticky left-0 z-20 bg-slate-200/80">#</th>
+                                    ${headers.map(h => `<th class="px-3.5 py-2.5">${h}</th>`).join('')}
                                 </tr>
                             </thead>
-                            <tbody id="pub-tbody" class="text-sm divide-y divide-gray-100">
-                            </tbody>
+                            <tbody id="pub-tbody"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- DASHBOARD ANALITIK PUBLIK -->
+                <!-- DASHBOARD ANALITIK -->
                 <div id="pub-layer-dashboard" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6 pb-20"></div>
             `;
 
@@ -1236,14 +1645,15 @@
             if(!tbody) return;
             
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${globalPublicHeaders.length}" class="p-12 text-center text-gray-400 font-bold text-sm bg-white">Belum ada respons atau tidak ada data yang cocok dengan pencarian Anda.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${globalPublicHeaders.length + 1}" class="p-12 text-center text-gray-400 font-bold text-sm bg-white">Belum ada respons atau tidak ada data yang cocok.</td></tr>`;
                 return;
             }
             
-            tbody.innerHTML = data.map(r => `
-                <tr class="hover:bg-blue-50 transition bg-white">
-                    <td class="p-4 text-gray-500 font-medium text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
-                    ${globalPublicHeaders.slice(1).map(h => `<td class="p-4 text-gray-800 text-sm max-w-[200px] truncate" title="${r.data[h]||'-'}">${renderAnswerCell(r.data[h])}</td>`).join('')}
+            tbody.innerHTML = data.map((r, idx) => `
+                <tr>
+                    <td class="sheet-row-num px-2 py-2 text-xs font-bold">${idx + 1}</td>
+                    <td class="px-3.5 py-2 text-gray-600 font-mono text-xs whitespace-nowrap">${new Date(r.date).toLocaleString('id-ID')}</td>
+                    ${globalPublicHeaders.slice(1).map(h => `<td class="px-3.5 py-2 text-gray-800 text-xs max-w-[240px] truncate" title="${String(r.data[h]||'-').replace(/"/g, '&quot;')}">${renderAnswerCell(r.data[h])}</td>`).join('')}
                 </tr>`).join('');
         }
 
@@ -1267,13 +1677,11 @@
                     let rDate = new Date(r.date);
                     rDate.setHours(0,0,0,0);
                     if(dateStart) {
-                        let sDate = new Date(dateStart);
-                        sDate.setHours(0,0,0,0);
+                        let sDate = new Date(dateStart); sDate.setHours(0,0,0,0);
                         if(rDate < sDate) matchDate = false;
                     }
                     if(dateEnd) {
-                        let eDate = new Date(dateEnd);
-                        eDate.setHours(23,59,59,999);
+                        let eDate = new Date(dateEnd); eDate.setHours(23,59,59,999);
                         if(rDate > eDate) matchDate = false;
                     }
                 }
@@ -1290,17 +1698,17 @@
             }
             const table = document.getElementById("public-response-table");
             const wb = XLSX.utils.table_to_book(table, {sheet: "Responses"});
-            XLSX.writeFile(wb, `${globalPublicFormTitle}_Public_Responses.xlsx`);
+            XLSX.writeFile(wb, `${globalPublicFormTitle}_Responses.xlsx`);
         }
 
         function togglePublicResView(type) {
             document.getElementById('pub-layer-table').classList.add('hidden');
             document.getElementById('pub-layer-dashboard').classList.add('hidden');
-            document.getElementById('btn-pub-table').className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition';
-            document.getElementById('btn-pub-dashboard').className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-pub-table').className = 'flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
+            document.getElementById('btn-pub-dashboard').className = 'flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold text-gray-500 hover:text-gray-800 transition';
             
             document.getElementById(`pub-layer-${type}`).classList.remove('hidden');
-            document.getElementById(`btn-pub-${type}`).className = 'flex-1 md:flex-none px-4 py-2.5 rounded-lg text-sm font-bold bg-white text-edu-blue shadow-sm transition';
+            document.getElementById(`btn-pub-${type}`).className = 'flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold bg-white text-edu-blue shadow-sm transition';
         }
 
         async function loadPublicForm(slug) {
@@ -1338,44 +1746,42 @@
             if (form.bannerUrl && form.bannerUrl.includes('|')) { bannerLink = form.bannerUrl.split('|')[1]; }
             else if (form.bannerUrl && form.bannerUrl !== 'isQuiz_true' && form.bannerUrl !== 'isQuiz_false') { bannerLink = form.bannerUrl; }
 
-           if (bannerLink) {
-    bannerHtml = `<div class="banner-img-container"><img src="${bannerLink}" onerror="this.src='https://placehold.co/1600x400/081D42/FFFFFF?text=Banner+Error'"></div>`;
-} else {
-    bannerHtml = `
-    <div class="relative overflow-hidden bg-gradient-to-br from-[#061638] via-[#0B2861] to-[#123E91] px-6 py-6 md:px-8 md:py-7 border-b-[3px] border-edu-orange">
-        <!-- Decorative Subtle Glow -->
-        <div class="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-blue-400/15 blur-3xl"></div>
-        <div class="pointer-events-none absolute -bottom-20 left-1/3 w-48 h-48 rounded-full bg-orange-400/10 blur-3xl"></div>
+            if (bannerLink) {
+                bannerHtml = `<div class="banner-img-container"><img src="${bannerLink}" onerror="this.src='https://placehold.co/1600x400/081D42/FFFFFF?text=Banner+Error'"></div>`;
+            } else {
+                bannerHtml = `
+                <div class="relative overflow-hidden bg-gradient-to-br from-[#061638] via-[#0B2861] to-[#123E91] px-6 py-6 md:px-8 md:py-7 border-b-[3px] border-edu-orange">
+                    <div class="pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full bg-blue-400/15 blur-3xl"></div>
+                    <div class="pointer-events-none absolute -bottom-20 left-1/3 w-48 h-48 rounded-full bg-orange-400/10 blur-3xl"></div>
 
-        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-5">
-            <!-- Logo Frame Premium -->
-            <div class="w-16 h-16 md:w-[70px] md:h-[70px] flex-shrink-0 bg-white rounded-2xl p-2 shadow-[0_8px_24px_rgba(0,0,0,0.28)] ring-4 ring-white/10 flex items-center justify-center">
-                <img src="${APP_LOGO_URL}" alt="Logo All Education" class="w-full h-full object-contain">
-            </div>
+                    <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-5">
+                        <div class="w-16 h-16 md:w-[70px] md:h-[70px] flex-shrink-0 bg-white rounded-2xl p-2 shadow-[0_8px_24px_rgba(0,0,0,0.28)] ring-4 ring-white/10 flex items-center justify-center">
+                            <img src="${APP_LOGO_URL}" alt="Logo All Education" class="w-full h-full object-contain">
+                        </div>
 
-            <!-- Info Corporate -->
-            <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap items-center gap-2 mb-1.5">
-                    <h2 class="text-white font-extrabold text-base md:text-lg uppercase tracking-wider leading-none">ALL EDUCATION INDONESIA</h2>
-                    <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-widest bg-edu-orange/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
-                        <i class="fa-solid fa-circle-check text-[9px]"></i> Official
-                    </span>
-                </div>
-                <p class="text-blue-100/80 text-[11px] md:text-xs leading-relaxed">
-                    Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810
-                </p>
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 pt-2.5 border-t border-white/10 text-[11px]">
-                    <span class="text-white/90 font-semibold inline-flex items-center gap-1.5">
-                        <i class="fa-solid fa-phone text-amber-400 text-[10px]"></i> 6285283091439
-                    </span>
-                    <span class="italic text-amber-300/95 font-medium">
-                        "Belajar Tanpa Batas, Raih Prestasi Bersama All Education"
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>`;
-}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                <h2 class="text-white font-extrabold text-base md:text-lg uppercase tracking-wider leading-none">ALL EDUCATION INDONESIA</h2>
+                                <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-widest bg-edu-orange/20 text-amber-300 border border-amber-400/30 px-2.5 py-0.5 rounded-full backdrop-blur-sm">
+                                    <i class="fa-solid fa-circle-check text-[9px]"></i> Official
+                                </span>
+                            </div>
+                            <p class="text-blue-100/80 text-[11px] md:text-xs leading-relaxed">
+                                Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810
+                            </p>
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 pt-2.5 border-t border-white/10 text-[11px]">
+                                <span class="text-white/90 font-semibold inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-phone text-amber-400 text-[10px]"></i> 6285283091439
+                                </span>
+                                <span class="italic text-amber-300/95 font-medium">
+                                    "Belajar Tanpa Batas, Raih Prestasi Bersama All Education"
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
             container.innerHTML = `
                 <div class="bg-white rounded-2xl shadow-xl shadow-black/20 border border-white/10 mb-6 fade-in overflow-hidden">
                     ${bannerHtml}
@@ -1414,7 +1820,6 @@
             return `<div class="form-page fade-in" id="page-dom-${pageIndex}" style="display: none;">${header}${fieldsHtml}</div>`;
         }
 
-        // Global Helper for Rating Stars
         window.setPublicRating = function(fieldId, value, max) {
             document.getElementById(`rating_val_${fieldId}`).value = value;
             const container = document.getElementById(`rating_container_${fieldId}`);
