@@ -19,8 +19,6 @@
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwzqnF-ju3nMajxcZ1CAfFdK008GpiVtjsxxK1XMsc7vnECf359Swa5Smj98BDAfjJ8kA/exec"; 
         
         // 👇👇 [GANTI LINK LOGO MANUAL DI SINI] 👇👇
-        // Masukkan link logo Anda di dalam tanda kutip di bawah ini.
-        // Logo ini akan otomatis tampil secepat kilat saat aplikasi pertama kali dibuka!
         let APP_LOGO_URL = "https://iili.io/CMttawP.md.png";
         let APP_FAVICON_URL = "https://iili.io/CMttawP.md.png";
         // 👆👆 ==================================== 👆👆
@@ -34,7 +32,14 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 'edu-dark': '#0B192C', 'edu-blue': '#0044CC', 'edu-gold': '#FACC15', 'edu-bg': '#F8FAFC' },
+                    colors: {
+                        'edu-dark': '#0B192C',
+                        'edu-navy': '#081D42',
+                        'edu-blue': '#0044CC',
+                        'edu-orange': '#F97316',
+                        'edu-gold': '#FACC15',
+                        'edu-bg': '#F8FAFC'
+                    },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
@@ -52,6 +57,15 @@
         .view-section:not(.active) { display: none !important; }
         #view-login.active { display: flex !important; align-items: center; justify-content: center; }
         #view-public-responses.active { display: flex !important; flex-direction: column; }
+
+        /* BACKGROUND KHAS ALL EDUCATION UNTUK PUBLIC FORM */
+        .public-form-bg {
+            background: linear-gradient(135deg, #06183A 0%, #0A2558 55%, #0F3578 100%);
+            background-attachment: fixed;
+        }
+        .corporate-accent-line {
+            background: linear-gradient(90deg, #F97316 0%, #FB923C 40%, #0044CC 100%);
+        }
 
         .fade-in { animation: fadeIn 0.1s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
@@ -76,7 +90,7 @@
         .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.2s infinite linear; border-radius: 12px; }
         @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-        .kop-surat-motto { font-style: italic; color: #f97316; font-weight: 600; font-size: 12px; }
+        .kop-surat-motto { font-style: italic; color: #f97316; font-weight: 600; font-size: 11px; }
         
         /* BANNER FULL - TANPA POTONGAN */
         .banner-img-container { width: 100%; height: auto; border-radius: 16px 16px 0 0; overflow: hidden; background: #e2e8f0; }
@@ -85,12 +99,33 @@
 </head>
 <body class="bg-edu-bg">
 
-    <!-- VIEW 1: PUBLIC FORM -->
-    <section id="view-public-form" class="view-section relative">
-        <div id="public-form-container" class="max-w-3xl mx-auto py-8 md:py-12 px-4 pb-32 fade-in min-h-screen">
-            <div class="bg-white rounded-2xl p-8 shadow-sm skeleton h-48 mb-6 border border-gray-100"></div>
-            <div class="bg-white rounded-2xl p-6 shadow-sm skeleton h-24 mb-4"></div>
-            <div class="bg-white rounded-2xl p-6 shadow-sm skeleton h-24 mb-4"></div>
+    <!-- VIEW 1: PUBLIC FORM (CORPORATE ALL EDUCATION THEME) -->
+    <section id="view-public-form" class="view-section relative public-form-bg">
+        <!-- CORPORATE TOP HEADER -->
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gray-200/80 shadow-sm">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 md:h-[72px] flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <img src="" id="public-header-logo" alt="All Education Logo" class="h-9 w-9 md:h-11 md:w-11 object-contain rounded-xl border border-gray-100 p-1 bg-white shadow-sm">
+                    <div class="leading-tight">
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-extrabold text-edu-navy text-base md:text-lg tracking-tight">ALL EDUCATION</span>
+                            <span class="font-extrabold text-edu-orange text-base md:text-lg tracking-tight">INDONESIA</span>
+                        </div>
+                        <p class="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-[0.14em]">Official Digital Form Portal</p>
+                    </div>
+                </div>
+                <div class="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200/80 px-3.5 py-1.5 rounded-full">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <span class="text-[11px] font-bold text-slate-600 tracking-wide">Verified Corporate Form</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- AREA FORM (KARTU TETAP PUTIH BERSIH) -->
+        <div id="public-form-container" class="max-w-3xl mx-auto py-8 md:py-10 px-4 pb-28 fade-in min-h-[calc(100vh-72px)]">
+            <div class="bg-white rounded-2xl p-8 shadow-xl shadow-black/20 skeleton h-48 mb-6"></div>
+            <div class="bg-white rounded-2xl p-6 shadow-xl shadow-black/20 skeleton h-24 mb-4"></div>
+            <div class="bg-white rounded-2xl p-6 shadow-xl shadow-black/20 skeleton h-24 mb-4"></div>
         </div>
     </section>
 
@@ -230,6 +265,7 @@
             setFavicon(APP_FAVICON_URL);
             if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
             if(document.getElementById('sidebar-logo')) document.getElementById('sidebar-logo').src = APP_LOGO_URL;
+            if(document.getElementById('public-header-logo')) document.getElementById('public-header-logo').src = APP_LOGO_URL;
 
             api('getSettings').then(res => {
                 if(res.success && res.settings) {
@@ -238,6 +274,7 @@
                         APP_LOGO_URL = state.settings.logoUrl;
                         if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
                         if(document.getElementById('sidebar-logo')) document.getElementById('sidebar-logo').src = APP_LOGO_URL;
+                        if(document.getElementById('public-header-logo')) document.getElementById('public-header-logo').src = APP_LOGO_URL;
                     }
                     if(state.settings.faviconUrl) {
                         APP_FAVICON_URL = state.settings.faviconUrl;
@@ -310,7 +347,6 @@
             btn.disabled = true;
 
             if (typeof google === 'undefined' && !IS_PREVIEW) {
-                // REST API MODE (Blogger)
                 try {
                     const res = await api('login', { email, password: pass });
                     if(res.success) {
@@ -600,17 +636,18 @@
                             ${bannerLink ? `
                             <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                                 <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview Banner</div>
-                                <div class="banner-img-container" style="aspect-ratio: 4/1; overflow:hidden;"><img src="${bannerLink}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/1600x400/1E3E62/FFFFFF?text=Banner+Error'"></div>
+                                <div class="banner-img-container" style="aspect-ratio: 4/1; overflow:hidden;"><img src="${bannerLink}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://placehold.co/1600x400/081D42/FFFFFF?text=Banner+Error'"></div>
                             </div>
                             ` : `
-                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm opacity-80">
-                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview (Auto Kop Surat)</div>
-                                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b-[4px] border-edu-blue rounded-t-2xl">
-                                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
+                            <div class="mt-4 border border-gray-200 rounded-2xl overflow-hidden shadow-sm opacity-90">
+                                <div class="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Preview (Auto Kop Surat Corporate)</div>
+                                <div class="h-1.5 w-full corporate-accent-line"></div>
+                                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b border-gray-100">
+                                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-2xl p-2 flex items-center justify-center"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
                                     <div class="flex-1">
-                                        <h1 class="text-edu-blue font-black text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
-                                        <p class="text-gray-700 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
-                                        <p class="text-gray-800 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
+                                        <h1 class="text-edu-navy font-extrabold text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
+                                        <p class="text-gray-500 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
+                                        <p class="text-gray-700 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
                                         <p class="kop-surat-motto text-[10px] md:text-[11px]">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
                                     </div>
                                 </div>
@@ -963,7 +1000,12 @@
             
             if(res.success) {
                 state.settings = newSettings;
-                if(logo) { APP_LOGO_URL = logo; document.getElementById('sidebar-logo').src = logo; document.getElementById('login-logo').src = logo; }
+                if(logo) {
+                    APP_LOGO_URL = logo;
+                    if(document.getElementById('sidebar-logo')) document.getElementById('sidebar-logo').src = logo;
+                    if(document.getElementById('login-logo')) document.getElementById('login-logo').src = logo;
+                    if(document.getElementById('public-header-logo')) document.getElementById('public-header-logo').src = logo;
+                }
                 if(fav) { APP_FAVICON_URL = fav; setFavicon(fav); }
                 Swal.fire({ icon: 'success', title: 'Pengaturan Disimpan', showConfirmButton: false, timer: 1500 });
             } else { Swal.fire('Gagal', res.message, 'error'); }
@@ -1266,7 +1308,7 @@
             const res = await api('getFormBySlug', { slug: slug });
             
             if(!res.success) {
-                container.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center shadow-sm border-t-8 border-t-red-500 max-w-md mx-auto mt-20"><h2 class="text-xl font-extrabold text-gray-900 mb-2">Form Tidak Ditemukan</h2><p class="text-gray-500 text-sm font-medium">Tautan tidak valid atau telah ditutup.</p></div>`; return;
+                container.innerHTML = `<div class="bg-white p-10 rounded-3xl text-center shadow-xl shadow-black/20 border-t-8 border-t-red-500 max-w-md mx-auto mt-16"><h2 class="text-xl font-extrabold text-gray-900 mb-2">Form Tidak Ditemukan</h2><p class="text-gray-500 text-sm font-medium">Tautan tidak valid atau telah ditutup.</p></div>`; return;
             }
 
             const form = res.form;
@@ -1297,38 +1339,54 @@
             else if (form.bannerUrl && form.bannerUrl !== 'isQuiz_true' && form.bannerUrl !== 'isQuiz_false') { bannerLink = form.bannerUrl; }
 
             if (bannerLink) {
-                bannerHtml = `<div class="banner-img-container"><img src="${bannerLink}" onerror="this.src='https://placehold.co/1600x400/1E3E62/FFFFFF?text=Banner+Error'"></div>`;
+                bannerHtml = `<div class="banner-img-container"><img src="${bannerLink}" onerror="this.src='https://placehold.co/1600x400/081D42/FFFFFF?text=Banner+Error'"></div>`;
             } else {
                 bannerHtml = `
-                <div class="bg-white p-5 md:p-6 flex items-center gap-4 border-b-[4px] border-edu-blue rounded-t-2xl">
-                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0"><img src="${APP_LOGO_URL}" alt="Logo" class="w-full h-full object-contain"></div>
+                <div class="h-1.5 w-full corporate-accent-line rounded-t-2xl"></div>
+                <div class="bg-white px-6 py-5 md:px-8 md:py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 border-b border-gray-100">
+                    <div class="w-14 h-14 md:w-16 md:h-16 flex-shrink-0 bg-slate-50 border border-slate-100 rounded-2xl p-2 flex items-center justify-center shadow-sm">
+                        <img src="${APP_LOGO_URL}" alt="Logo All Education" class="w-full h-full object-contain">
+                    </div>
                     <div class="flex-1">
-                        <h1 class="text-edu-blue font-black text-sm md:text-base uppercase tracking-wide mb-0.5">ALL EDUCATION INDONESIA</h1>
-                        <p class="text-gray-700 text-[10px] md:text-[11px] leading-snug mb-0.5">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
-                        <p class="text-gray-800 text-[10px] md:text-[11px] font-bold mb-1">FAX: <span class="font-normal">6285283091439</span></p>
-                        <p class="kop-surat-motto text-[10px] md:text-[11px]">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</p>
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <h2 class="text-edu-navy font-extrabold text-sm md:text-base uppercase tracking-wide">ALL EDUCATION INDONESIA</h2>
+                            <span class="text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-edu-orange border border-orange-200/70 px-2 py-0.5 rounded-md">Official</span>
+                        </div>
+                        <p class="text-gray-500 text-[11px] leading-relaxed">Jl. Ciherang No.19 Blok I2, Ciherang, Kec. Dramaga, Kabupaten Bogor, Jawa Barat 16810</p>
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[11px]">
+                            <span class="text-gray-700 font-semibold"><i class="fa-solid fa-phone text-edu-blue mr-1 text-[10px]"></i> 6285283091439</span>
+                            <span class="kop-surat-motto">"Belajar Tanpa Batas, Raih Prestasi Bersama All Education"</span>
+                        </div>
                     </div>
                 </div>`;
             }
 
             container.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 fade-in">
+                <div class="bg-white rounded-2xl shadow-xl shadow-black/20 border border-white/10 mb-6 fade-in overflow-hidden">
                     ${bannerHtml}
-                    <div class="p-6 md:p-8">
-                        <h1 class="text-lg md:text-xl font-bold text-gray-900 mb-2 leading-tight">${form.title}</h1>
-                        <p class="text-gray-600 font-medium whitespace-pre-wrap leading-relaxed text-[13px]">${form.description}</p>
+                    <div class="p-6 md:p-8 bg-white">
+                        <h1 class="text-xl md:text-2xl font-extrabold text-edu-navy mb-2 leading-tight">${form.title}</h1>
+                        <p class="text-gray-600 font-medium whitespace-pre-wrap leading-relaxed text-[13.5px]">${form.description}</p>
                     </div>
                 </div>
                 
                 <form id="public-submit-form" onsubmit="submitPublicForm(event)">
                     <div id="pages-container">${pages.map((page, index) => renderPublicPage(page, index)).join('')}</div>
                     
-                    <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4 pt-4 border-t border-gray-200">
-                        <div class="text-[10px] text-gray-400 font-bold flex items-center gap-1.5 uppercase tracking-widest"><i class="fa-solid fa-shield-halved"></i> All Education</div>
-                        <div class="flex gap-2 w-full sm:w-auto">
-                            <button type="button" id="btn-prev" onclick="changePage(-1)" class="hidden bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-xl text-[13px] font-bold transition flex-1 sm:flex-none"><i class="fa-solid fa-arrow-left mr-1"></i> Kembali</button>
-                            <button type="button" id="btn-next" onclick="changePage(1)" class="${pages.length > 1 ? '' : 'hidden'} bg-edu-blue hover:bg-blue-800 text-white px-6 py-2.5 rounded-xl text-[13px] font-bold shadow-sm transition flex-1 sm:flex-none">Selanjutnya <i class="fa-solid fa-arrow-right ml-1"></i></button>
-                            <button type="submit" id="btn-submit-form" class="${pages.length > 1 ? 'hidden' : ''} bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl text-[13px] font-bold shadow-sm transition flex-1 sm:flex-none flex justify-center items-center gap-2">Kirim Jawaban <i class="fa-solid fa-paper-plane"></i></button>
+                    <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4 pt-5 border-t border-white/15">
+                        <div class="text-[11px] text-blue-200/80 font-semibold flex items-center gap-2 tracking-wide">
+                            <i class="fa-solid fa-shield-halved text-edu-orange"></i> Formulir Resmi All Education Indonesia
+                        </div>
+                        <div class="flex gap-2.5 w-full sm:w-auto">
+                            <button type="button" id="btn-prev" onclick="changePage(-1)" class="hidden bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-2.5 rounded-xl text-[13px] font-bold transition flex-1 sm:flex-none backdrop-blur-sm">
+                                <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
+                            </button>
+                            <button type="button" id="btn-next" onclick="changePage(1)" class="${pages.length > 1 ? '' : 'hidden'} bg-edu-orange hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl text-[13px] font-bold shadow-lg shadow-orange-950/30 transition flex-1 sm:flex-none">
+                                Selanjutnya <i class="fa-solid fa-arrow-right ml-1"></i>
+                            </button>
+                            <button type="submit" id="btn-submit-form" class="${pages.length > 1 ? 'hidden' : ''} bg-edu-orange hover:bg-orange-600 text-white px-7 py-2.5 rounded-xl text-[13px] font-bold shadow-lg shadow-orange-950/30 transition flex-1 sm:flex-none flex justify-center items-center gap-2">
+                                Kirim Jawaban <i class="fa-solid fa-paper-plane"></i>
+                            </button>
                         </div>
                     </div>
                 </form>`;
@@ -1336,7 +1394,7 @@
         }
 
         function renderPublicPage(page, pageIndex) {
-            let header = page.title ? `<div class="bg-blue-50 border-l-4 border-edu-blue p-5 rounded-2xl mb-5"><h3 class="text-sm font-bold text-edu-blue">${page.title}</h3></div>` : '';
+            let header = page.title ? `<div class="bg-white border-l-4 border-edu-orange shadow-lg shadow-black/15 p-5 rounded-2xl mb-5"><h3 class="text-sm font-extrabold text-edu-navy">${page.title}</h3></div>` : '';
             let fieldsHtml = page.fields.map(f => renderPublicField(f)).join('');
             return `<div class="form-page fade-in" id="page-dom-${pageIndex}" style="display: none;">${header}${fieldsHtml}</div>`;
         }
@@ -1396,7 +1454,7 @@
             else if (f.type === 'time') { inputHtml = `<input type="time" name="${f.label}" class="w-full md:w-auto border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-edu-blue bg-white text-[13px] text-gray-700" ${reqAttr}>`; } 
             else if (f.type === 'file') { inputHtml = `<input type="file" name="${f.label}" class="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-blue-50 file:text-edu-blue hover:file:bg-blue-100 transition cursor-pointer border border-dashed border-gray-300 p-3 rounded-lg bg-gray-50" ${reqAttr}>`; }
 
-            return `<div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-5 transition-all focus-within:border-edu-blue focus-within:shadow-md"><label class="block text-[13px] font-bold text-gray-800 mb-3">${f.label} ${reqHtml}</label>${inputHtml}</div>`;
+            return `<div class="bg-white p-5 md:p-6 rounded-2xl shadow-lg shadow-black/15 border border-gray-100 mb-5 transition-all focus-within:border-edu-orange focus-within:ring-2 focus-within:ring-orange-100"><label class="block text-[13.5px] font-bold text-edu-navy mb-3">${f.label} ${reqHtml}</label>${inputHtml}</div>`;
         }
 
         function changePage(step) {
@@ -1498,7 +1556,7 @@
         async function submitPublicForm(e) {
             if (e && e.preventDefault) e.preventDefault();
             
-            const confirmAction = await Swal.fire({ title: 'Yakin mengumpulkan jawaban?', text: "Pastikan data yang Anda isi sudah benar.", icon: 'question', showCancelButton: true, confirmButtonColor: '#16a34a', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color:#475569">Batal</span>', confirmButtonText: 'Kumpulkan' });
+            const confirmAction = await Swal.fire({ title: 'Yakin mengumpulkan jawaban?', text: "Pastikan data yang Anda isi sudah benar.", icon: 'question', showCancelButton: true, confirmButtonColor: '#F97316', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color:#475569">Batal</span>', confirmButtonText: 'Kumpulkan' });
             if (!confirmAction.isConfirmed) return;
 
             const formEl = document.getElementById('public-submit-form');
@@ -1529,7 +1587,6 @@
                 }
             }
 
-            // Enhanced Quiz Scoring Logic with Points
             if (isQuiz) {
                 state.publicFormSchema.fields.forEach(fieldDef => {
                     if (fieldDef.correctAnswer) {
@@ -1578,7 +1635,7 @@
             const payload = { formId: state.publicFormSchema.id, slug: state.publicFormSchema.slug, answers: answers, files: files };
 
             document.getElementById('public-form-container').innerHTML = `
-                <div class="bg-white p-10 md:p-12 rounded-3xl text-center shadow-sm border-t-8 border-t-green-500 max-w-lg mx-auto mt-10 fade-in">
+                <div class="bg-white p-10 md:p-12 rounded-3xl text-center shadow-xl shadow-black/20 border-t-8 border-t-green-500 max-w-lg mx-auto mt-10 fade-in">
                     <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-5 text-4xl"><i class="fa-solid fa-check"></i></div>
                     <h2 class="text-2xl font-bold text-gray-900 mb-2">Terkirim Sempurna!</h2>
                     <p class="text-gray-500 text-[13px]">Terima kasih, data Anda telah direkam dengan aman.</p>
@@ -1588,7 +1645,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
             Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Berhasil dikirim!', showConfirmButton: false, timer: 3000 });
 
-            // Kirim secara background (non-blocking) agar UI secepat kilat
             api('submitResponse', payload);
         }
 
